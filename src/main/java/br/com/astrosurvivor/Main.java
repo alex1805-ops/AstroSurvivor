@@ -24,6 +24,9 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Quad;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class Main extends SimpleApplication {
 
@@ -33,6 +36,11 @@ public class Main extends SimpleApplication {
 
     private Player player;
     private StarField starField;
+
+    // ==========================================================
+    // INIMIGOS
+    // ==========================================================
+    private final List<Inimigo> inimigos = new ArrayList<>();
 
     // ==========================================================
     // HUD
@@ -147,8 +155,7 @@ public class Main extends SimpleApplication {
     // LISTENER DE AÇÕES
     // ==========================================================
 
-    private final ActionListener actionListener =
-        new ActionListener() {
+    private final ActionListener actionListener = new ActionListener() {
 
             @Override
             public void onAction(
@@ -802,8 +809,13 @@ public class Main extends SimpleApplication {
 
     private void iniciarJogo() {
 
-        estadoAtual =
-            EstadoJogo.JOGANDO;
+        estadoAtual = EstadoJogo.JOGANDO;
+
+        menu.remover();
+
+        if (menuNode.getParent() != null) {
+            menuNode.removeFromParent();
+        }
 
         menu.getNode().setCullHint(
             Node.CullHint.Always
@@ -828,6 +840,8 @@ public class Main extends SimpleApplication {
         barraVida.getNode().setCullHint(
             Node.CullHint.Never
         );
+
+        criarInimigo();
 
         inputManager.setCursorVisible(
             false
@@ -870,6 +884,42 @@ public class Main extends SimpleApplication {
         inputManager.setCursorVisible(
             true
         );
+    }
+
+    // ==========================================================
+    // CRIAR INIMIGOS
+    // ==========================================================
+    private void criarInimigo(){
+        Vector3f posicaoInicial = player.getNode().getLocalTranslation().add(0, 0, -30);
+
+        Inimigo inimigo = new Inimigo(assetManager, posicaoInicial);
+
+        inimigos.add(inimigo);
+
+        rootNode.attachChild(inimigo.getNode());
+    }
+
+    // ==========================================================
+    // COLISÃO
+    // ==========================================================
+    private void verificarColisoesComInimigos(){
+        Vector3f posicaoJogador = player.getNode().getLocalTranslation();
+
+        for (int i = inimigos .size() - 1; i >= 0; i--){
+            Inimigo inimigo = inimigos.get(i);
+
+            float distancia = posicaoJogador.distance(inimigo.getPosicao());
+
+            if(distancia <= 1.5f){
+                player.receberDano(10);
+
+                rootNode.detachChild(inimigo.getNode());
+
+                inimigos.remove(i);
+
+                System.out.println("O jogador foi atingido!");
+            }
+        }
     }
 
     // ==========================================================
@@ -1008,6 +1058,17 @@ public class Main extends SimpleApplication {
             return;
         }
 
+        Vector3f posicaoJogador = player.getNode().getLocalTranslation();
+
+        // ==========================================================
+        // INIMIGOS
+        // ==========================================================
+        for (Inimigo inimigo : inimigos){
+            inimigo.atualizar(tpf, posicaoJogador);
+        }
+
+        verificarColisoesComInimigos();
+
         // ======================================================
         // POSIÇÃO
         // ======================================================
@@ -1036,14 +1097,6 @@ public class Main extends SimpleApplication {
         );
 
         // ======================================================
-        // ESTRELAS
-        // ======================================================
-
-        // IMPORTANTE:
-        // Não estou chamando starField.atualizar().
-        // Você decidiu não reciclar mais as estrelas.
-
-        // ======================================================
         // VIDA
         // ======================================================
 
@@ -1066,6 +1119,13 @@ public class Main extends SimpleApplication {
         if (!player.estaVivo()) {
 
             jogadorMorreu();
+        }
+
+        // ==========================================================
+        // INIMIGOS
+        // ==========================================================
+        for (Inimigo inimigo : inimigos){
+            inimigo.atualizar(tpf, player.getNode().getLocalTranslation());
         }
     }
 }
