@@ -27,7 +27,6 @@ import com.jme3.scene.shape.Quad;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class Main extends SimpleApplication {
 
     // ==========================================================
@@ -40,7 +39,18 @@ public class Main extends SimpleApplication {
     // ==========================================================
     // INIMIGOS
     // ==========================================================
+
     private final List<Inimigo> inimigos = new ArrayList<>();
+
+    private float tempoSpawn = 0f;
+
+    // Tempo entre o nascimento de cada meteoro
+    private final float intervaloSpawn = 1.5f;
+
+    // ==========================================================
+    // PROJÉTEIS
+    // ==========================================================
+    private final List<Projetil> projeteis = new ArrayList<>();
 
     // ==========================================================
     // HUD
@@ -90,112 +100,116 @@ public class Main extends SimpleApplication {
     // ==========================================================
 
     private static final String MOVIMENTO_FRENTE =
-        "MovimentoFrente";
+            "MovimentoFrente";
 
     private static final String MOVIMENTO_TRAS =
-        "MovimentoTras";
+            "MovimentoTras";
 
     private static final String MOVIMENTO_ESQUERDA =
-        "MovimentoEsquerda";
+            "MovimentoEsquerda";
 
     private static final String MOVIMENTO_DIREITA =
-        "MovimentoDireita";
+            "MovimentoDireita";
 
     // ==========================================================
     // AÇÕES
     // ==========================================================
 
     private static final String TESTE_DANO =
-        "TesteDano";
+            "TesteDano";
 
     private static final String CLIQUE_MOUSE =
-        "CliqueMouse";
+            "CliqueMouse";
 
     // ==========================================================
     // LISTENER DE MOVIMENTO
     // ==========================================================
 
     private final AnalogListener analogListener =
-        (name, value, tpf) -> {
+            (name, value, tpf) -> {
 
-            if (estadoAtual != EstadoJogo.JOGANDO) {
-                return;
-            }
+                if (estadoAtual != EstadoJogo.JOGANDO) {
+                    return;
+                }
 
-            if (name.equals(MOVIMENTO_FRENTE)) {
-                player.mover(
-                    Vector3f.UNIT_Z.negate(),
-                    tpf
-                );
-            }
+                if (name.equals(MOVIMENTO_FRENTE)) {
+                    player.mover(
+                            Vector3f.UNIT_Z.negate(),
+                            tpf
+                    );
+                }
 
-            if (name.equals(MOVIMENTO_TRAS)) {
-                player.mover(
-                    Vector3f.UNIT_Z,
-                    tpf
-                );
-            }
+                if (name.equals(MOVIMENTO_TRAS)) {
+                    player.mover(
+                            Vector3f.UNIT_Z,
+                            tpf
+                    );
+                }
 
-            if (name.equals(MOVIMENTO_ESQUERDA)) {
-                player.mover(
-                    Vector3f.UNIT_X.negate(),
-                    tpf
-                );
-            }
+                if (name.equals(MOVIMENTO_ESQUERDA)) {
+                    player.mover(
+                            Vector3f.UNIT_X.negate(),
+                            tpf
+                    );
+                }
 
-            if (name.equals(MOVIMENTO_DIREITA)) {
-                player.mover(
-                    Vector3f.UNIT_X,
-                    tpf
-                );
-            }
-        };
+                if (name.equals(MOVIMENTO_DIREITA)) {
+                    player.mover(
+                            Vector3f.UNIT_X,
+                            tpf
+                    );
+                }
+            };
 
     // ==========================================================
     // LISTENER DE AÇÕES
     // ==========================================================
 
-    private final ActionListener actionListener = new ActionListener() {
+    private final ActionListener actionListener =
+            new ActionListener() {
 
-            @Override
-            public void onAction(
-                String name,
-                boolean isPressed,
-                float tpf
-            ) {
+                @Override
+                public void onAction(
+                        String name,
+                        boolean isPressed,
+                        float tpf
+                ) {
 
-                if (!isPressed) {
-                    return;
-                }
-
-                // ==================================================
-                // TESTE DE DANO
-                // ==================================================
-
-                if (name.equals(TESTE_DANO)) {
-
-                    if (estadoAtual == EstadoJogo.JOGANDO) {
-
-                        System.out.println(
-                            "SPACE FOI APERTADO!"
-                        );
-
-                        player.receberDano(10);
+                    if (!isPressed) {
+                        return;
                     }
 
-                    return;
+                    // ==================================================
+                    // TESTE DE DANO
+                    // ==================================================
+
+                    if (name.equals(TESTE_DANO)) {
+
+                        if (estadoAtual == EstadoJogo.JOGANDO) {
+
+                            System.out.println(
+                                    "SPACE FOI APERTADO!"
+                            );
+
+                            player.receberDano(10);
+                        }
+
+                        return;
+                    }
+
+                    // ==================================================
+                    // CLIQUE DO MOUSE
+                    // ==================================================
+
+                    if (name.equals(CLIQUE_MOUSE)) {
+                        if(estadoAtual == EstadoJogo.JOGANDO){
+                                atirar();
+                        } else {
+                                processarClique();
+                        }
+                    }
                 }
-
-                // ==================================================
-                // CLIQUE DO MOUSE
-                // ==================================================
-
-                if (name.equals(CLIQUE_MOUSE)) {
-
-                    processarClique();
-                }
-            }
-        };
+            };
 
     // ==========================================================
     // MAIN
@@ -206,21 +220,21 @@ public class Main extends SimpleApplication {
         Main jogo = new Main();
 
         AppSettings configuracoes =
-            new AppSettings(true);
+                new AppSettings(true);
 
         configuracoes.setTitle(
-            "Astro Survivor"
+                "Astro Survivor"
         );
 
         configuracoes.setResolution(
-            1280,
-            720
+                1280,
+                720
         );
 
         configuracoes.setFullscreen(true);
 
         jogo.setSettings(
-            configuracoes
+                configuracoes
         );
 
         jogo.start();
@@ -251,11 +265,11 @@ public class Main extends SimpleApplication {
         player = new Player(assetManager);
 
         player.setPosition(
-            new Vector3f(0, 0, 0)
+                new Vector3f(0, 0, 0)
         );
 
         rootNode.attachChild(
-            player.getNode()
+                player.getNode()
         );
 
         // ======================================================
@@ -263,11 +277,11 @@ public class Main extends SimpleApplication {
         // ======================================================
 
         starField = new StarField(
-            assetManager
+                assetManager
         );
 
         rootNode.attachChild(
-            starField.getNode()
+                starField.getNode()
         );
 
         // ======================================================
@@ -275,12 +289,12 @@ public class Main extends SimpleApplication {
         // ======================================================
 
         cam.setLocation(
-            new Vector3f(0, 8, 12)
+                new Vector3f(0, 8, 12)
         );
 
         cam.lookAt(
-            Vector3f.ZERO,
-            Vector3f.UNIT_Y
+                Vector3f.ZERO,
+                Vector3f.UNIT_Y
         );
 
         // ======================================================
@@ -288,9 +302,9 @@ public class Main extends SimpleApplication {
         // ======================================================
 
         BitmapFont fonte =
-            assetManager.loadFont(
-                "Interface/Fonts/Default.fnt"
-            );
+                assetManager.loadFont(
+                        "Interface/Fonts/Default.fnt"
+                );
 
         // ======================================================
         // HUD
@@ -309,8 +323,12 @@ public class Main extends SimpleApplication {
         // ======================================================
 
         menu = new Menu(this);
+
         menuNode = menu.getNode();
-        guiNode.attachChild(menuNode);
+
+        guiNode.attachChild(
+                menuNode
+        );
 
         // ======================================================
         // COMEÇA NO MENU
@@ -326,51 +344,51 @@ public class Main extends SimpleApplication {
     private void configurarControles() {
 
         inputManager.addMapping(
-            MOVIMENTO_FRENTE,
-            new KeyTrigger(KeyInput.KEY_W)
+                MOVIMENTO_FRENTE,
+                new KeyTrigger(KeyInput.KEY_W)
         );
 
         inputManager.addMapping(
-            MOVIMENTO_TRAS,
-            new KeyTrigger(KeyInput.KEY_S)
+                MOVIMENTO_TRAS,
+                new KeyTrigger(KeyInput.KEY_S)
         );
 
         inputManager.addMapping(
-            MOVIMENTO_ESQUERDA,
-            new KeyTrigger(KeyInput.KEY_A)
+                MOVIMENTO_ESQUERDA,
+                new KeyTrigger(KeyInput.KEY_A)
         );
 
         inputManager.addMapping(
-            MOVIMENTO_DIREITA,
-            new KeyTrigger(KeyInput.KEY_D)
+                MOVIMENTO_DIREITA,
+                new KeyTrigger(KeyInput.KEY_D)
         );
 
         inputManager.addMapping(
-            TESTE_DANO,
-            new KeyTrigger(KeyInput.KEY_SPACE)
+                TESTE_DANO,
+                new KeyTrigger(KeyInput.KEY_SPACE)
         );
 
         inputManager.addMapping(
-            CLIQUE_MOUSE,
-            new MouseButtonTrigger(
-                MouseInput.BUTTON_LEFT
-            )
+                CLIQUE_MOUSE,
+                new MouseButtonTrigger(
+                        MouseInput.BUTTON_LEFT
+                )
         );
 
         inputManager.addListener(
-            analogListener,
+                analogListener,
 
-            MOVIMENTO_FRENTE,
-            MOVIMENTO_TRAS,
-            MOVIMENTO_ESQUERDA,
-            MOVIMENTO_DIREITA
+                MOVIMENTO_FRENTE,
+                MOVIMENTO_TRAS,
+                MOVIMENTO_ESQUERDA,
+                MOVIMENTO_DIREITA
         );
 
         inputManager.addListener(
-            actionListener,
+                actionListener,
 
-            TESTE_DANO,
-            CLIQUE_MOUSE
+                TESTE_DANO,
+                CLIQUE_MOUSE
         );
     }
 
@@ -381,50 +399,46 @@ public class Main extends SimpleApplication {
     private void criarHUD(BitmapFont fonte) {
 
         textoVida = new BitmapText(
-            fonte,
-            false
+                fonte,
+                false
         );
 
         textoVida.setSize(24);
 
         textoVida.setColor(
-            ColorRGBA.White
+                ColorRGBA.White
         );
 
         textoVida.setText(
-            "VIDA: "
-            + player.getVida()
-            + "/"
-            + player.getVidaMax()
+                "VIDA: "
+                + player.getVida()
+                + "/"
+                + player.getVidaMax()
         );
 
         textoVida.setLocalTranslation(
-            20,
-            cam.getHeight() - 20,
-            0
+                20,
+                cam.getHeight() - 20,
+                0
         );
 
         guiNode.attachChild(
-            textoVida
+                textoVida
         );
-
-        // ======================================================
-        // BARRA
-        // ======================================================
 
         barraVida = new BarraVida(
-            assetManager,
-            20,
-            cam.getHeight() - 80
+                assetManager,
+                20,
+                cam.getHeight() - 80
         );
 
         guiNode.attachChild(
-            barraVida.getNode()
+                barraVida.getNode()
         );
 
         barraVida.atualizar(
-            player.getVida(),
-            player.getVidaMax()
+                player.getVida(),
+                player.getVidaMax()
         );
     }
 
@@ -435,11 +449,11 @@ public class Main extends SimpleApplication {
     private void criarGameOver(BitmapFont fonte) {
 
         gameOverNode = new Node(
-            "GameOver"
+                "GameOver"
         );
 
         guiNode.attachChild(
-            gameOverNode
+                gameOverNode
         );
 
         // ======================================================
@@ -447,41 +461,41 @@ public class Main extends SimpleApplication {
         // ======================================================
 
         fundoGameOver = new Geometry(
-            "FundoGameOver",
-            new Quad(
-                cam.getWidth(),
-                cam.getHeight()
-            )
+                "FundoGameOver",
+                new Quad(
+                        cam.getWidth(),
+                        cam.getHeight()
+                )
         );
 
         Material materialFundo =
-            new Material(
-                assetManager,
-                "Common/MatDefs/Misc/Unshaded.j3md"
-            );
+                new Material(
+                        assetManager,
+                        "Common/MatDefs/Misc/Unshaded.j3md"
+                );
 
         materialFundo.setColor(
-            "Color",
-            new ColorRGBA(
-                0f,
-                0f,
-                0f,
-                0.75f
-            )
+                "Color",
+                new ColorRGBA(
+                        0f,
+                        0f,
+                        0f,
+                        0.75f
+                )
         );
 
         materialFundo
-            .getAdditionalRenderState()
-            .setBlendMode(
-                RenderState.BlendMode.Alpha
-            );
+                .getAdditionalRenderState()
+                .setBlendMode(
+                        RenderState.BlendMode.Alpha
+                );
 
         fundoGameOver.setMaterial(
-            materialFundo
+                materialFundo
         );
 
         gameOverNode.attachChild(
-            fundoGameOver
+                fundoGameOver
         );
 
         // ======================================================
@@ -489,29 +503,29 @@ public class Main extends SimpleApplication {
         // ======================================================
 
         tituloGameOver =
-            new BitmapText(
-                fonte,
-                false
-            );
+                new BitmapText(
+                        fonte,
+                        false
+                );
 
         tituloGameOver.setSize(72);
 
         tituloGameOver.setColor(
-            ColorRGBA.Red
+                ColorRGBA.Red
         );
 
         tituloGameOver.setText(
-            "GAME OVER"
+                "GAME OVER"
         );
 
         centralizarTexto(
-            tituloGameOver,
-            cam.getWidth() / 2f,
-            500
+                tituloGameOver,
+                cam.getWidth() / 2f,
+                500
         );
 
         gameOverNode.attachChild(
-            tituloGameOver
+                tituloGameOver
         );
 
         // ======================================================
@@ -519,29 +533,29 @@ public class Main extends SimpleApplication {
         // ======================================================
 
         textoGameOver =
-            new BitmapText(
-                fonte,
-                false
-            );
+                new BitmapText(
+                        fonte,
+                        false
+                );
 
         textoGameOver.setSize(30);
 
         textoGameOver.setColor(
-            ColorRGBA.White
+                ColorRGBA.White
         );
 
         textoGameOver.setText(
-            "Sua nave foi destruída!"
+                "Sua nave foi destruída!"
         );
 
         centralizarTexto(
-            textoGameOver,
-            cam.getWidth() / 2f,
-            430
+                textoGameOver,
+                cam.getWidth() / 2f,
+                430
         );
 
         gameOverNode.attachChild(
-            textoGameOver
+                textoGameOver
         );
 
         // ======================================================
@@ -549,26 +563,26 @@ public class Main extends SimpleApplication {
         // ======================================================
 
         botaoJogarNovamente =
-            criarBotao(
-                350,
-                70,
-                (cam.getWidth() - 350) / 2f,
-                320
-            );
+                criarBotao(
+                        350,
+                        70,
+                        (cam.getWidth() - 350) / 2f,
+                        320
+                );
 
         gameOverNode.attachChild(
-            botaoJogarNovamente
+                botaoJogarNovamente
         );
 
         textoBotaoJogarNovamente =
-            criarTextoBotao(
-                fonte,
-                "JOGAR NOVAMENTE",
-                botaoJogarNovamente
-            );
+                criarTextoBotao(
+                        fonte,
+                        "JOGAR NOVAMENTE",
+                        botaoJogarNovamente
+                );
 
         gameOverNode.attachChild(
-            textoBotaoJogarNovamente
+                textoBotaoJogarNovamente
         );
 
         // ======================================================
@@ -576,26 +590,26 @@ public class Main extends SimpleApplication {
         // ======================================================
 
         botaoVoltarMenu =
-            criarBotao(
-                350,
-                70,
-                (cam.getWidth() - 350) / 2f,
-                220
-            );
+                criarBotao(
+                        350,
+                        70,
+                        (cam.getWidth() - 350) / 2f,
+                        220
+                );
 
         gameOverNode.attachChild(
-            botaoVoltarMenu
+                botaoVoltarMenu
         );
 
         textoBotaoVoltarMenu =
-            criarTextoBotao(
-                fonte,
-                "VOLTAR AO MENU",
-                botaoVoltarMenu
-            );
+                criarTextoBotao(
+                        fonte,
+                        "VOLTAR AO MENU",
+                        botaoVoltarMenu
+                );
 
         gameOverNode.attachChild(
-            textoBotaoVoltarMenu
+                textoBotaoVoltarMenu
         );
     }
 
@@ -604,40 +618,40 @@ public class Main extends SimpleApplication {
     // ==========================================================
 
     private Geometry criarBotao(
-        float largura,
-        float altura,
-        float x,
-        float y
+            float largura,
+            float altura,
+            float x,
+            float y
     ) {
 
         Geometry botao =
-            new Geometry(
-                "Botao",
-                new Quad(
-                    largura,
-                    altura
-                )
-            );
+                new Geometry(
+                        "Botao",
+                        new Quad(
+                                largura,
+                                altura
+                        )
+                );
 
         Material material =
-            new Material(
-                assetManager,
-                "Common/MatDefs/Misc/Unshaded.j3md"
-            );
+                new Material(
+                        assetManager,
+                        "Common/MatDefs/Misc/Unshaded.j3md"
+                );
 
         material.setColor(
-            "Color",
-            ColorRGBA.DarkGray
+                "Color",
+                ColorRGBA.DarkGray
         );
 
         botao.setMaterial(
-            material
+                material
         );
 
         botao.setLocalTranslation(
-            x,
-            y,
-            2
+                x,
+                y,
+                2
         );
 
         return botao;
@@ -648,46 +662,46 @@ public class Main extends SimpleApplication {
     // ==========================================================
 
     private BitmapText criarTextoBotao(
-        BitmapFont fonte,
-        String texto,
-        Geometry botao
+            BitmapFont fonte,
+            String texto,
+            Geometry botao
     ) {
 
         BitmapText textoBotao =
-            new BitmapText(
-                fonte,
-                false
-            );
+                new BitmapText(
+                        fonte,
+                        false
+                );
 
         textoBotao.setSize(28);
 
         textoBotao.setColor(
-            ColorRGBA.White
+                ColorRGBA.White
         );
 
         textoBotao.setText(
-            texto
+                texto
         );
 
         float larguraBotao = 350f;
         float alturaBotao = 70f;
 
         float larguraTexto =
-            textoBotao.getLineWidth();
+                textoBotao.getLineWidth();
 
         float x =
-            botao.getLocalTranslation().x
-            + (larguraBotao - larguraTexto) / 2f;
+                botao.getLocalTranslation().x
+                + (larguraBotao - larguraTexto) / 2f;
 
         float y =
-            botao.getLocalTranslation().y
-            + (alturaBotao / 2f)
-            + 10f;
+                botao.getLocalTranslation().y
+                + (alturaBotao / 2f)
+                + 10f;
 
         textoBotao.setLocalTranslation(
-            x,
-            y,
-            3
+                x,
+                y,
+                3
         );
 
         return textoBotao;
@@ -698,18 +712,18 @@ public class Main extends SimpleApplication {
     // ==========================================================
 
     private void centralizarTexto(
-        BitmapText texto,
-        float centroX,
-        float posicaoY
+            BitmapText texto,
+            float centroX,
+            float posicaoY
     ) {
 
         float largura =
-            texto.getLineWidth();
+                texto.getLineWidth();
 
         texto.setLocalTranslation(
-            centroX - largura / 2f,
-            posicaoY,
-            3
+                centroX - largura / 2f,
+                posicaoY,
+                3
         );
     }
 
@@ -719,7 +733,8 @@ public class Main extends SimpleApplication {
 
     private void processarClique() {
 
-        Vector2f cursor = inputManager.getCursorPosition();
+        Vector2f cursor =
+                inputManager.getCursorPosition();
 
         float mouseX = cursor.x;
         float mouseY = cursor.y;
@@ -727,15 +742,29 @@ public class Main extends SimpleApplication {
         // ======================================================
         // MENU
         // ======================================================
+
         if (estadoAtual == EstadoJogo.MENU) {
 
-            if (mouseDentro(mouseX, mouseY, menu.getAreaBotaoJogar())) {
+            if (mouseDentro(
+                    mouseX,
+                    mouseY,
+                    menu.getAreaBotaoJogar()
+            )) {
+
                 iniciarJogo();
                 return;
             }
 
-            if (mouseDentro(mouseX, mouseY, menu.getAreaBotaoSair())) {
-                System.out.println("SAINDO DO JOGO...");
+            if (mouseDentro(
+                    mouseX,
+                    mouseY,
+                    menu.getAreaBotaoSair()
+            )) {
+
+                System.out.println(
+                        "SAINDO DO JOGO..."
+                );
+
                 stop();
                 return;
             }
@@ -747,12 +776,22 @@ public class Main extends SimpleApplication {
 
         if (estadoAtual == EstadoJogo.GAME_OVER) {
 
-            if (mouseDentro(mouseX, mouseY, botaoJogarNovamente)) {
+            if (mouseDentro(
+                    mouseX,
+                    mouseY,
+                    botaoJogarNovamente
+            )) {
+
                 reiniciarJogo();
                 return;
             }
 
-            if (mouseDentro(mouseX, mouseY, botaoVoltarMenu)) {
+            if (mouseDentro(
+                    mouseX,
+                    mouseY,
+                    botaoVoltarMenu
+            )) {
+
                 voltarAoMenu();
                 return;
             }
@@ -763,19 +802,28 @@ public class Main extends SimpleApplication {
     // CLIQUE EM TEXTO
     // ==========================================================
 
-    private boolean mouseDentroTexto(float mouseX, float mouseY, BitmapText texto) {
-        float x =texto.getLocalTranslation().x;
+    private boolean mouseDentroTexto(
+            float mouseX,
+            float mouseY,
+            BitmapText texto
+    ) {
 
-        float y = texto.getLocalTranslation().y;
+        float x =
+                texto.getLocalTranslation().x;
 
-        float largura = texto.getLineWidth();
+        float y =
+                texto.getLocalTranslation().y;
 
-        float altura = texto.getLineHeight();
+        float largura =
+                texto.getLineWidth();
+
+        float altura =
+                texto.getLineHeight();
 
         return mouseX >= x
-            && mouseX <= x + largura
-            && mouseY >= y - altura
-            && mouseY <= y;
+                && mouseX <= x + largura
+                && mouseY >= y - altura
+                && mouseY <= y;
     }
 
     // ==========================================================
@@ -783,24 +831,24 @@ public class Main extends SimpleApplication {
     // ==========================================================
 
     private boolean mouseDentro(
-        float mouseX,
-        float mouseY,
-        Geometry botao
+            float mouseX,
+            float mouseY,
+            Geometry botao
     ) {
 
         float x =
-            botao.getLocalTranslation().x;
+                botao.getLocalTranslation().x;
 
         float y =
-            botao.getLocalTranslation().y;
+                botao.getLocalTranslation().y;
 
         float largura = 350f;
         float altura = 70f;
 
         return mouseX >= x
-            && mouseX <= x + largura
-            && mouseY >= y
-            && mouseY <= y + altura;
+                && mouseX <= x + largura
+                && mouseY >= y
+                && mouseY <= y + altura;
     }
 
     // ==========================================================
@@ -809,7 +857,10 @@ public class Main extends SimpleApplication {
 
     private void iniciarJogo() {
 
-        estadoAtual = EstadoJogo.JOGANDO;
+        estadoAtual =
+                EstadoJogo.JOGANDO;
+
+        tempoSpawn = 0f;
 
         menu.remover();
 
@@ -818,37 +869,37 @@ public class Main extends SimpleApplication {
         }
 
         menu.getNode().setCullHint(
-            Node.CullHint.Always
+                Node.CullHint.Always
         );
 
         gameOverNode.setCullHint(
-            Node.CullHint.Always
+                Node.CullHint.Always
         );
 
         player.getNode().setCullHint(
-            Node.CullHint.Never
+                Node.CullHint.Never
         );
 
         starField.getNode().setCullHint(
-            Node.CullHint.Never
+                Node.CullHint.Never
         );
 
         textoVida.setCullHint(
-            BitmapText.CullHint.Never
+                BitmapText.CullHint.Never
         );
 
         barraVida.getNode().setCullHint(
-            Node.CullHint.Never
+                Node.CullHint.Never
         );
 
         criarInimigo();
 
         inputManager.setCursorVisible(
-            false
+                false
         );
 
         System.out.println(
-            "JOGO INICIADO!"
+                "JOGO INICIADO!"
         );
     }
 
@@ -859,40 +910,111 @@ public class Main extends SimpleApplication {
     private void jogadorMorreu() {
 
         estadoAtual =
-            EstadoJogo.GAME_OVER;
+                EstadoJogo.GAME_OVER;
 
         System.out.println(
-            "PLAYER MORREU!"
+                "PLAYER MORREU!"
         );
 
         player.getNode().setCullHint(
-            Node.CullHint.Always
+                Node.CullHint.Always
         );
 
         textoVida.setCullHint(
-            BitmapText.CullHint.Always
+                BitmapText.CullHint.Always
         );
 
         barraVida.getNode().setCullHint(
-            Node.CullHint.Always
+                Node.CullHint.Always
         );
 
         gameOverNode.setCullHint(
-            Node.CullHint.Never
+                Node.CullHint.Never
         );
 
         inputManager.setCursorVisible(
-            true
+                true
         );
     }
 
     // ==========================================================
-    // CRIAR INIMIGOS
+    // ATIRAR
     // ==========================================================
-    private void criarInimigo(){
-        Vector3f posicaoInicial = player.getNode().getLocalTranslation().add(0, 0, -30);
+    private void atirar(){
+        Vector3f posicaoJogador = player.getNode().getWorldTranslation().clone();
 
-        Inimigo inimigo = new Inimigo(assetManager, posicaoInicial);
+        /*
+        * A nave se movimenta no eixo Z.
+        * O disparo sai pela frente dela.
+        * Que neste projeto é o eixo Z negativo.
+        */
+
+        Vector3f direcao = Vector3f.UNIT_Z.negate();
+
+        Vector3f posicaoInicial = posicaoJogador.add(direcao.mult(2.5f));
+
+        Projetil projetil = new Projetil(assetManager, posicaoInicial, direcao);
+
+        projeteis.add(projetil);
+
+        rootNode.attachChild(projetil.getNode());
+
+        System.out.println("PROJÉTIL DISPARADO!");
+    }
+
+    // ==========================================================
+    // CRIAR INIMIGO
+    // ==========================================================
+
+    private void criarInimigo() {
+
+        Vector3f posicaoJogador = player.getNode().getWorldTranslation();
+
+        Vector3f posicaoInicial;
+
+        int lado = (int) (Math.random() * 4);
+
+        float distanciaNascimento = 30f;
+
+        switch (lado) {
+            //Frente
+            case 0:
+                posicaoInicial = posicaoJogador.clone().add(
+                    (float) (Math.random() * 20f - 10f),
+                    (float) (Math.random() * 10f - 5f),
+                    distanciaNascimento
+                );
+                break;
+        
+            //Trás
+            case 1:
+                posicaoInicial = posicaoJogador.clone().add(
+                    (float) (Math.random() * 20f - 10f),
+                    (float) (Math.random() * 10f - 5f),
+                    -distanciaNascimento
+                );
+                break;
+
+            //Esquerda
+            case 2:
+                posicaoInicial = posicaoJogador.clone().add(
+                    -distanciaNascimento,
+                    (float) (Math.random() * 20f - 10f),
+                    (float) (Math.random() * 10f - 5f)
+                );
+                break;
+
+            //Direita
+            default:
+                posicaoInicial = posicaoJogador.clone().add(
+                    distanciaNascimento,
+                    (float) (Math.random() * 20f - 10f),
+                    (float) (Math.random() * 10f - 5f)
+                );
+                break;
+        }
+
+        Inimigo inimigo = new Inimigo(assetManager, posicaoInicial, posicaoJogador.clone());
 
         inimigos.add(inimigo);
 
@@ -902,24 +1024,142 @@ public class Main extends SimpleApplication {
     // ==========================================================
     // COLISÃO
     // ==========================================================
-    private void verificarColisoesComInimigos(){
-        Vector3f posicaoJogador = player.getNode().getLocalTranslation();
 
-        for (int i = inimigos .size() - 1; i >= 0; i--){
+    private void verificarColisoesComInimigos() {
+
+        Vector3f posicaoJogador = player.getNode().getWorldTranslation();
+
+        for (
+            int i = inimigos.size() - 1;
+            i >= 0;
+            i--
+        ) {
+
             Inimigo inimigo = inimigos.get(i);
 
-            float distancia = posicaoJogador.distance(inimigo.getPosicao());
+            Vector3f posicaoInimigo = inimigo.getNode().getWorldTranslation();
 
-            if(distancia <= 1.5f){
+            float distanciaX = Math.abs(posicaoJogador.x - posicaoInimigo.x);
+
+            float distanciaY = Math.abs(posicaoJogador.y - posicaoInimigo.y);
+
+            float distanciaZ = Math.abs(posicaoJogador.z - posicaoInimigo.z);
+
+            /*
+            *Área aproximada da nave:
+            *X = Largura
+            *Y = Altura
+            *Z = COmprimento
+            *
+            * O tamanho do meteóro também é considerado
+            */
+
+            boolean colidiu = distanciaX <= 3.0f && distanciaY <= 1.2f && distanciaZ <= 2.5f;
+
+            if(colidiu) {
                 player.receberDano(10);
 
                 rootNode.detachChild(inimigo.getNode());
 
                 inimigos.remove(i);
 
-                System.out.println("O jogador foi atingido!");
+                System.out.println("O jogador foi atingido");
+
+                if(player.getVida() <= 0){
+                    jogadorMorreu();
+                }
             }
         }
+    }
+
+    // ==========================================================
+    // COLISÃO ENTRE PROJÉTEIS E INIMIGOS
+    // ==========================================================
+    private void verificarColisoesProjetilInimigo(){
+        for (int p= projeteis.size() - 1; p >= 0; p--){
+                Projetil projetil = projeteis.get(p);
+
+                Vector3f posicaoProjetil = projetil.getNode().getWorldTranslation();
+
+                boolean projetilAcertou = false;
+
+                for (int i = inimigos.size() - 1; i >= 0; i--){
+                        Inimigo inimigo = inimigos.get(i);
+
+                        Vector3f posicaoInimigo = inimigo.getNode().getWorldTranslation();
+
+                        float distancia = posicaoProjetil.distance(posicaoInimigo);
+
+                        if(distancia <= 1.2f) {
+                                inimigo.receberDano(30);
+
+                                System.out.println("METEORO ATINGIDO");
+
+                                projetilAcertou = true;
+
+                                if(!inimigo.estaVivo()){
+                                        rootNode.detachChild(inimigo.getNode());
+                                        inimigos.remove(i);
+
+                                        System.out.println("METEORO DESTRUÍDO");
+                                }
+
+                                break;
+                        }
+                }
+
+                if (projetilAcertou){
+                        rootNode.detachChild(projetil.getNode());
+
+                        projeteis.remove(p);
+                }
+        }
+    }
+
+    // ==========================================================
+    // LIMPAR PROJÉTEIS DISTANTES
+    // ==========================================================
+    private void limparProjeteisDistantes(){
+        Vector3f posicaoJogador = player.getNode().getWorldTranslation();
+
+        for(int i = projeteis.size() - 1; i >= 0; i--){
+                Projetil projetil = projeteis.get(i);
+
+                float distancia = posicaoJogador.distance(projetil.getPosicao());
+
+                if(distancia > 100f) {
+                        rootNode.detachChild(projetil.getNode());
+
+                        projeteis.remove(i);
+               }
+        }
+    }
+
+    // ==========================================================
+    // LIMPAR INIMIGOS
+    // ==========================================================
+
+    private void limparInimigos() {
+
+        for (Inimigo inimigo : inimigos) {
+
+            rootNode.detachChild(
+                    inimigo.getNode()
+            );
+        }
+
+        inimigos.clear();
+    }
+
+    // ==========================================================
+    // LIMPAR PROJÉTEIS
+    // ==========================================================
+    private void limparProjeteis(){
+        for (Projetil projetil : projeteis){
+                rootNode.detachChild(projetil.getNode());
+        }
+
+        projeteis.clear();
     }
 
     // ==========================================================
@@ -928,42 +1168,49 @@ public class Main extends SimpleApplication {
 
     private void reiniciarJogo() {
 
+        limparInimigos();
+        limparProjeteis();
+
+        tempoSpawn = 0f;
+
         player.resetarVida();
 
         player.setPosition(
-            new Vector3f(0, 0, 0)
+                new Vector3f(0, 0, 0)
         );
 
         barraVida.atualizar(
-            player.getVida(),
-            player.getVidaMax()
+                player.getVida(),
+                player.getVidaMax()
         );
 
         estadoAtual =
-            EstadoJogo.JOGANDO;
+                EstadoJogo.JOGANDO;
 
         gameOverNode.setCullHint(
-            Node.CullHint.Always
+                Node.CullHint.Always
         );
 
         player.getNode().setCullHint(
-            Node.CullHint.Never
+                Node.CullHint.Never
         );
 
         textoVida.setCullHint(
-            BitmapText.CullHint.Never
+                BitmapText.CullHint.Never
         );
 
         barraVida.getNode().setCullHint(
-            Node.CullHint.Never
+                Node.CullHint.Never
         );
 
+        criarInimigo();
+
         inputManager.setCursorVisible(
-            false
+                false
         );
 
         System.out.println(
-            "JOGO REINICIADO!"
+                "JOGO REINICIADO!"
         );
     }
 
@@ -973,39 +1220,44 @@ public class Main extends SimpleApplication {
 
     private void voltarAoMenu() {
 
+        limparInimigos();
+        limparProjeteis();
+
+        tempoSpawn = 0f;
+
         estadoAtual =
-            EstadoJogo.MENU;
+                EstadoJogo.MENU;
 
         gameOverNode.setCullHint(
-            Node.CullHint.Always
+                Node.CullHint.Always
         );
 
         menu.getNode().setCullHint(
-            Node.CullHint.Never
+                Node.CullHint.Never
         );
 
         player.getNode().setCullHint(
-            Node.CullHint.Always
+                Node.CullHint.Always
         );
 
         starField.getNode().setCullHint(
-            Node.CullHint.Always
+                Node.CullHint.Always
         );
 
         textoVida.setCullHint(
-            BitmapText.CullHint.Always
+                BitmapText.CullHint.Always
         );
 
         barraVida.getNode().setCullHint(
-            Node.CullHint.Always
+                Node.CullHint.Always
         );
 
         inputManager.setCursorVisible(
-            true
+                true
         );
 
         System.out.println(
-            "VOLTANDO AO MENU..."
+                "VOLTANDO AO MENU..."
         );
     }
 
@@ -1016,34 +1268,34 @@ public class Main extends SimpleApplication {
     private void mostrarMenu() {
 
         estadoAtual =
-            EstadoJogo.MENU;
+                EstadoJogo.MENU;
 
         menu.getNode().setCullHint(
-            Node.CullHint.Never
+                Node.CullHint.Never
         );
 
         gameOverNode.setCullHint(
-            Node.CullHint.Always
+                Node.CullHint.Always
         );
 
         player.getNode().setCullHint(
-            Node.CullHint.Always
+                Node.CullHint.Always
         );
 
         starField.getNode().setCullHint(
-            Node.CullHint.Always
+                Node.CullHint.Always
         );
 
         textoVida.setCullHint(
-            BitmapText.CullHint.Always
+                BitmapText.CullHint.Always
         );
 
         barraVida.getNode().setCullHint(
-            Node.CullHint.Always
+                Node.CullHint.Always
         );
 
         inputManager.setCursorVisible(
-            true
+                true
         );
     }
 
@@ -1058,42 +1310,62 @@ public class Main extends SimpleApplication {
             return;
         }
 
-        Vector3f posicaoJogador = player.getNode().getLocalTranslation();
+        // ======================================================
+        // SPAWN CONTÍNUO
+        // ======================================================
 
-        // ==========================================================
-        // INIMIGOS
-        // ==========================================================
-        for (Inimigo inimigo : inimigos){
-            inimigo.atualizar(tpf, posicaoJogador);
+        tempoSpawn += tpf;
+
+        if (tempoSpawn >= intervaloSpawn) {
+
+            criarInimigo();
+
+            tempoSpawn = 0f;
+        }
+
+        // ======================================================
+        // ATUALIZAR INIMIGOS
+        // ======================================================
+
+        for (Inimigo inimigo : inimigos) {
+            inimigo.atualizar(tpf);
+        }
+
+        // ======================================================
+        // ATUALIZAR PROJÉTEIS
+        // ======================================================
+        for (Projetil projetil : projeteis){
+                projetil.atualizar(tpf);
         }
 
         verificarColisoesComInimigos();
+        verificarColisoesProjetilInimigo();
+        limparProjeteisDistantes();
 
         // ======================================================
-        // POSIÇÃO
+        // POSIÇÃO DO PLAYER
         // ======================================================
 
-        Vector3f posicao =
-            player.getPosition();
+        Vector3f posicao = player.getPosition();
 
         // ======================================================
         // CÂMERA
         // ======================================================
 
         Vector3f posicaoCamera =
-            new Vector3f(
-                posicao.x,
-                posicao.y + 8,
-                posicao.z + 12
-            );
+                new Vector3f(
+                        posicao.x,
+                        posicao.y + 8,
+                        posicao.z + 12
+                );
 
         cam.setLocation(
-            posicaoCamera
+                posicaoCamera
         );
 
         cam.lookAt(
-            posicao,
-            Vector3f.UNIT_Y
+                posicao,
+                Vector3f.UNIT_Y
         );
 
         // ======================================================
@@ -1101,15 +1373,15 @@ public class Main extends SimpleApplication {
         // ======================================================
 
         textoVida.setText(
-            "VIDA: "
-            + player.getVida()
-            + "/"
-            + player.getVidaMax()
+                "VIDA: "
+                + player.getVida()
+                + "/"
+                + player.getVidaMax()
         );
 
         barraVida.atualizar(
-            player.getVida(),
-            player.getVidaMax()
+                player.getVida(),
+                player.getVidaMax()
         );
 
         // ======================================================
@@ -1119,13 +1391,6 @@ public class Main extends SimpleApplication {
         if (!player.estaVivo()) {
 
             jogadorMorreu();
-        }
-
-        // ==========================================================
-        // INIMIGOS
-        // ==========================================================
-        for (Inimigo inimigo : inimigos){
-            inimigo.atualizar(tpf, player.getNode().getLocalTranslation());
         }
     }
 }

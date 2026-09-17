@@ -9,21 +9,30 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 
 public class Inimigo {
+
     private final Node node;
 
     private int vida = 30;
 
-    private final float velocidade = 2f;
+    private final float velocidade = 6f;
 
-    public Inimigo(AssetManager assetManager, Vector3f posicaoInicial){
+    private final Vector3f direcao;
+
+    public Inimigo(
+            AssetManager assetManager,
+            Vector3f posicaoInicial,
+            Vector3f posicaoAlvo
+    ) {
+
         node = new Node("Inimigo");
 
         Box forma = new Box(0.8f, 0.8f, 0.8f);
 
         Geometry corpo = new Geometry("CorpoInimigo", forma);
 
-        Material material= new Material(
-            assetManager, "Common/MatDefs/Misc/Unshaded.j3md"
+        Material material = new Material(
+                assetManager,
+                "Common/MatDefs/Misc/Unshaded.j3md"
         );
 
         material.setColor("Color", ColorRGBA.Red);
@@ -33,31 +42,40 @@ public class Inimigo {
         node.attachChild(corpo);
 
         node.setLocalTranslation(posicaoInicial);
+
+        // A direção é calculada somente quando o meteoro nasce.
+        // Assim, ele não fica seguindo a posição atual do jogador.
+        direcao = posicaoAlvo
+                .subtract(posicaoInicial)
+                .normalize();
     }
 
-    public void atualizar(float tpf, Vector3f posicaoJogador){
-        Vector3f direcao = posicaoJogador.subtract(node.getLocalTranslation()).normalize();
+    public void atualizar(float tpf) {
 
         node.move(direcao.mult(velocidade * tpf));
     }
 
-    public void receberDano(int dano){
+    public void receberDano(int dano) {
+
         vida -= dano;
 
-        if(vida < 0){
+        if (vida < 0) {
             vida = 0;
         }
     }
 
-    public boolean estaVivo(){
+    public boolean estaVivo() {
+
         return vida > 0;
     }
 
-    public Node getNode(){
+    public Node getNode() {
+
         return node;
     }
 
-    public Vector3f getPosicao(){
+    public Vector3f getPosicao() {
+
         return node.getLocalTranslation();
     }
 }

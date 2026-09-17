@@ -16,10 +16,10 @@ public class StarField {
     private Random random;
 
     // Tamanho do campo
-    private float tamanhoCampo = 300f;
+    private float tamanhoCampo = 150f;
 
     // Quantidade de estrelas
-    private int quantidadeEstrelas = 20000;
+    private int quantidadeEstrelas = 10000;
 
     public StarField(AssetManager assetManager){
 
