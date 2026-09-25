@@ -399,8 +399,7 @@ public class Main extends SimpleApplication {
     private void criarHUD(BitmapFont fonte) {
 
         textoVida = new BitmapText(
-                fonte,
-                false
+                fonte
         );
 
         textoVida.setSize(24);
@@ -504,8 +503,7 @@ public class Main extends SimpleApplication {
 
         tituloGameOver =
                 new BitmapText(
-                        fonte,
-                        false
+                        fonte
                 );
 
         tituloGameOver.setSize(72);
@@ -534,8 +532,7 @@ public class Main extends SimpleApplication {
 
         textoGameOver =
                 new BitmapText(
-                        fonte,
-                        false
+                        fonte
                 );
 
         textoGameOver.setSize(30);
@@ -669,8 +666,7 @@ public class Main extends SimpleApplication {
 
         BitmapText textoBotao =
                 new BitmapText(
-                        fonte,
-                        false
+                        fonte
                 );
 
         textoBotao.setSize(28);
@@ -1014,11 +1010,77 @@ public class Main extends SimpleApplication {
                 break;
         }
 
-        Inimigo inimigo = new Inimigo(assetManager, posicaoInicial, posicaoJogador.clone());
+        Inimigo inimigo = new Inimigo(
+                assetManager,
+                posicaoInicial,
+                posicaoJogador.clone(),
+                TipoAsteroide.PEQUENO
+        );
 
         inimigos.add(inimigo);
 
         rootNode.attachChild(inimigo.getNode());
+    }
+
+    // ==========================================================
+    // CRIAÇÃO DE ASTEROIDES
+    // ==========================================================
+    private void criarAsteroide(
+        TipoAsteroide tipo,
+        Vector3f posicaoInicial,
+        Vector3f posicaoAlvo
+    ) {
+        Inimigo asteroide = new Inimigo(
+                assetManager,
+                posicaoInicial,
+                posicaoAlvo,
+                tipo
+        );
+
+        inimigos.add(asteroide);
+
+        rootNode.attachChild(asteroide.getNode());
+    }
+
+    // ==========================================================
+    // CRIAR FRAGMENTOS
+    // ==========================================================
+    private void criarFragmentos(
+        TipoAsteroide tipoDestruido,
+        Vector3f posicao
+    ){
+        TipoAsteroide tipoFragmento;
+
+        switch (tipoDestruido) {
+                case MEDIO:
+                        tipoFragmento = TipoAsteroide.PEQUENO;
+                        break;
+
+                case GRANDE:
+                        tipoFragmento= TipoAsteroide.MEDIO;
+                        break;
+
+                case PEQUENO:
+                default:
+                        return;        
+        };
+
+        Vector3f[] deslocamentos = {
+                new Vector3f(1.5f, 0, 0),
+                new Vector3f(-1.5f, 0f, 0f),
+                new Vector3f(0f, 1.5f, 0),
+                new Vector3f(0f, -1.5f, 0)
+        };
+
+        for (Vector3f deslocamento : deslocamentos) {
+                Vector3f posicaoFragmento = posicao.clone().add(deslocamento);
+
+                criarAsteroide(
+                        tipoFragmento,
+                        posicaoFragmento,
+                        player.getNode().getWorldTranslation().clone()
+                );
+        }
     }
 
     // ==========================================================
@@ -1098,10 +1160,20 @@ public class Main extends SimpleApplication {
                                 projetilAcertou = true;
 
                                 if(!inimigo.estaVivo()){
-                                        rootNode.detachChild(inimigo.getNode());
-                                        inimigos.remove(i);
+                                       Vector3f posicaoDestruicao = inimigo.getPosicao().clone();
 
-                                        System.out.println("METEORO DESTRUÍDO");
+                                       TipoAsteroide tipo = inimigo.getTipo();
+
+                                       rootNode.detachChild(inimigo.getNode());
+
+                                       inimigos.remove(i);
+
+                                       criarFragmentos(
+                                        tipo,
+                                        posicaoDestruicao
+                                       );
+
+                                        System.out.println("METEORO" + tipo + "DESTRUÍDO");
                                 }
 
                                 break;

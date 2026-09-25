@@ -9,33 +9,76 @@ import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 
 public class Inimigo {
-
     private final Node node;
 
-    private int vida = 30;
+    private final TipoAsteroide tipo;
 
-    private final float velocidade = 6f;
-
+    private final float velocidade;
     private final Vector3f direcao;
 
+    private int vida;
+
     public Inimigo(
-            AssetManager assetManager,
-            Vector3f posicaoInicial,
-            Vector3f posicaoAlvo
-    ) {
+        AssetManager assetManager,
+        Vector3f posicaoInicial,
+        Vector3f posicaoAlvo,
+        TipoAsteroide tipo
+    ){
+        this.tipo = tipo;
 
-        node = new Node("Inimigo");
+        //Configurações de cada tipo
+        switch (tipo) {
+            case PEQUENO:
+                vida = 30;
+                velocidade = 10f;
+                break;
+            
+            case MEDIO:
+                vida = 60;
+                velocidade = 6f;
+                break;
 
-        Box forma = new Box(0.8f, 0.8f, 0.8f);
+            case GRANDE:
+                vida = 90;
+                velocidade = 3f;
+                break;
+        
+            default:
+                vida = 30;
+                velocidade = 10f;
+                break;
+        }
 
-        Geometry corpo = new Geometry("CorpoInimigo", forma);
+        node = new Node("Asteroide_" + tipo);
 
-        Material material = new Material(
-                assetManager,
-                "Common/MatDefs/Misc/Unshaded.j3md"
-        );
+        //Tamanho dvisual de cada asteroide
+        float tamanho;
 
-        material.setColor("Color", ColorRGBA.Red);
+        switch (tipo) {
+            case PEQUENO:
+                tamanho = 0.5f;
+                break;
+            
+            case MEDIO:
+                tamanho = 1.0f;
+                break;
+
+            case GRANDE:
+                tamanho = 1.8f;
+                break;
+        
+            default:
+                tamanho = 0.5f;
+                break;
+        }
+
+        Box forma = new Box(tamanho, tamanho, tamanho);
+
+        Geometry corpo = new Geometry("CorpoAsteroide_" + tipo, forma);
+
+        Material material = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+
+        material.setColor("Color", ColorRGBA.Gray);
 
         corpo.setMaterial(material);
 
@@ -43,39 +86,44 @@ public class Inimigo {
 
         node.setLocalTranslation(posicaoInicial);
 
-        // A direção é calculada somente quando o meteoro nasce.
-        // Assim, ele não fica seguindo a posição atual do jogador.
-        direcao = posicaoAlvo
-                .subtract(posicaoInicial)
-                .normalize();
+        Vector3f direcao = posicaoAlvo.subtract(posicaoInicial).normalize();
+
+        this.direcao = direcao;
     }
 
-    public void atualizar(float tpf) {
-
+    public void atualizar(float tpf){
         node.move(direcao.mult(velocidade * tpf));
     }
 
-    public void receberDano(int dano) {
-
+    public void receberDano(int dano){
         vida -= dano;
 
-        if (vida < 0) {
+        if (vida < 0){
             vida = 0;
         }
     }
 
-    public boolean estaVivo() {
-
+    public boolean estaVivo(){
         return vida > 0;
     }
 
-    public Node getNode() {
-
+    public Node getNode(){
         return node;
     }
 
-    public Vector3f getPosicao() {
+    public Vector3f getPosicao(){
+        return node.getWorldTranslation();
+    }
 
-        return node.getLocalTranslation();
+    public TipoAsteroide getTipo(){
+        return tipo;
+    }
+
+    public float getVelocidade(){
+        return velocidade;
+    }
+
+    public int getVida(){
+        return vida;
     }
 }

@@ -131,8 +131,7 @@ public class Menu {
         // ==================================================
 
         titulo = new BitmapText(
-            fonteTitulo,
-            false
+            fonteTitulo
         );
 
         titulo.setText(
@@ -299,8 +298,7 @@ public class Menu {
 
         BitmapText botao =
             new BitmapText(
-                fonteTitulo,
-                false
+                fonteTitulo
             );
 
         botao.setText(
