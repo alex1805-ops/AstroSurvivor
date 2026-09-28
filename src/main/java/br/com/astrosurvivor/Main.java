@@ -45,7 +45,7 @@ public class Main extends SimpleApplication {
     private float tempoSpawn = 0f;
 
     // Tempo entre o nascimento de cada meteoro
-    private final float intervaloSpawn = 1.5f;
+    private final float intervaloSpawn = 2.0f;
 
     // ==========================================================
     // PROJÉTEIS
@@ -58,6 +58,8 @@ public class Main extends SimpleApplication {
 
     private BitmapText textoVida;
     private BarraVida barraVida;
+    private int score = 0;
+    private BitmapText textoScore;
 
     // ==========================================================
     // MENU
@@ -210,6 +212,27 @@ public class Main extends SimpleApplication {
                     }
                 }
             };
+
+    // ==========================================================
+    // SCORE
+    // ==========================================================
+    private void adicionarScore(TipoAsteroide tipo){
+        switch (tipo){
+            case PEQUENO:
+                score += 100;
+                break;
+
+            case MEDIO:
+                score += 200;
+                break;
+
+            case GRANDE:
+                score += 300;
+                break;
+        }
+
+        System.out.println("Score: " + score);
+    }
 
     // ==========================================================
     // MAIN
@@ -424,6 +447,26 @@ public class Main extends SimpleApplication {
         guiNode.attachChild(
                 textoVida
         );
+
+        // ==========================================================
+        // SCORE
+        // ==========================================================
+
+        textoScore = new BitmapText(fonte);
+
+        textoScore.setSize(24);
+
+        textoScore.setColor(ColorRGBA.White);
+
+        textoScore.setText("SCORE: " + score);
+
+        textoScore.setLocalTranslation(10, cam.getHeight() - 100, 0);
+
+        guiNode.attachChild(textoScore);
+
+        // ==========================================================
+        // BARRA DE VIDA
+        // ==========================================================
 
         barraVida = new BarraVida(
                 assetManager,
@@ -909,7 +952,7 @@ public class Main extends SimpleApplication {
                 EstadoJogo.GAME_OVER;
 
         System.out.println(
-                "PLAYER MORREU!"
+                "PLAYER FOI DE F!"
         );
 
         player.getNode().setCullHint(
@@ -977,7 +1020,7 @@ public class Main extends SimpleApplication {
             case 0:
                 posicaoInicial = posicaoJogador.clone().add(
                     (float) (Math.random() * 20f - 10f),
-                    (float) (Math.random() * 10f - 5f),
+                    0f,
                     distanciaNascimento
                 );
                 break;
@@ -986,7 +1029,7 @@ public class Main extends SimpleApplication {
             case 1:
                 posicaoInicial = posicaoJogador.clone().add(
                     (float) (Math.random() * 20f - 10f),
-                    (float) (Math.random() * 10f - 5f),
+                    0f,
                     -distanciaNascimento
                 );
                 break;
@@ -995,8 +1038,8 @@ public class Main extends SimpleApplication {
             case 2:
                 posicaoInicial = posicaoJogador.clone().add(
                     -distanciaNascimento,
-                    (float) (Math.random() * 20f - 10f),
-                    (float) (Math.random() * 10f - 5f)
+                    0f,
+                    (float) (Math.random() * 20f - 10f)
                 );
                 break;
 
@@ -1004,22 +1047,41 @@ public class Main extends SimpleApplication {
             default:
                 posicaoInicial = posicaoJogador.clone().add(
                     distanciaNascimento,
-                    (float) (Math.random() * 20f - 10f),
-                    (float) (Math.random() * 10f - 5f)
+                    0f,
+                    (float) (Math.random() * 20f - 10f)
                 );
                 break;
         }
 
+        TipoAsteroide tipo = sortearTipoAsteroide();
         Inimigo inimigo = new Inimigo(
                 assetManager,
                 posicaoInicial,
                 posicaoJogador.clone(),
-                TipoAsteroide.PEQUENO
+                tipo
         );
 
         inimigos.add(inimigo);
 
         rootNode.attachChild(inimigo.getNode());
+    }
+
+    // ==========================================================
+    // SORTEIO DE TIPO DE ASTEROIDE
+    // ==========================================================
+    private TipoAsteroide sortearTipoAsteroide() {
+
+        double sorteio = Math.random();
+
+        if(sorteio < 0.50) {
+                return TipoAsteroide.PEQUENO;
+        }
+
+        if(sorteio < 0.80) {
+                return TipoAsteroide.MEDIO;
+        } else {
+                return TipoAsteroide.GRANDE;
+        }
     }
 
     // ==========================================================
@@ -1163,6 +1225,8 @@ public class Main extends SimpleApplication {
                                        Vector3f posicaoDestruicao = inimigo.getPosicao().clone();
 
                                        TipoAsteroide tipo = inimigo.getTipo();
+
+                                       adicionarScore(tipo);
 
                                        rootNode.detachChild(inimigo.getNode());
 

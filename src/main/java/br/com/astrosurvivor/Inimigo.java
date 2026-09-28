@@ -30,22 +30,22 @@ public class Inimigo {
         switch (tipo) {
             case PEQUENO:
                 vida = 30;
-                velocidade = 10f;
+                velocidade = 8f;
                 break;
             
             case MEDIO:
                 vida = 60;
-                velocidade = 6f;
+                velocidade = 4f;
                 break;
 
             case GRANDE:
                 vida = 90;
-                velocidade = 3f;
+                velocidade = 1f;
                 break;
         
             default:
                 vida = 30;
-                velocidade = 10f;
+                velocidade = 8f;
                 break;
         }
 
