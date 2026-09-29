@@ -84,11 +84,6 @@ public class Menu {
 
         BitmapFont fonte =
             app.getAssetManager().loadFont(
-                "Interface/Fonts/Default.fnt"
-            );
-
-        BitmapFont fonteTitulo =
-            app.getAssetManager().loadFont(
                 "Interface/Fonts/Orbitron.fnt"
             );
 
@@ -131,7 +126,7 @@ public class Menu {
         // ==================================================
 
         titulo = new BitmapText(
-            fonteTitulo
+            fonte
         );
 
         titulo.setText(
@@ -179,7 +174,7 @@ public class Menu {
 
         botaoJogar =
             criarTextoBotao(
-                fonteTitulo,
+                fonte,
                 "JOGAR",
                 xJogar,
                 posicaoJogarY
@@ -209,7 +204,7 @@ public class Menu {
 
         botaoSair =
             criarTextoBotao(
-                fonteTitulo,
+                fonte,
                 "SAIR",
                 xSair,
                 posicaoSairY
@@ -290,7 +285,7 @@ public class Menu {
     // ======================================================
 
     private BitmapText criarTextoBotao(
-        BitmapFont fonteTitulo,
+        BitmapFont fonte,
         String texto,
         float x,
         float y
@@ -298,7 +293,7 @@ public class Menu {
 
         BitmapText botao =
             new BitmapText(
-                fonteTitulo
+                fonte
             );
 
         botao.setText(

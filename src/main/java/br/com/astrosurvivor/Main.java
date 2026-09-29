@@ -60,6 +60,9 @@ public class Main extends SimpleApplication {
     private BarraVida barraVida;
     private int score = 0;
     private BitmapText textoScore;
+    private BitmapText textoNivel;
+    private BitmapText textoXP;
+    private BitmapText TextoEscudo;
 
     // ==========================================================
     // MENU
@@ -217,21 +220,34 @@ public class Main extends SimpleApplication {
     // SCORE
     // ==========================================================
     private void adicionarScore(TipoAsteroide tipo){
+
+        int xpGanho = 0;
+
         switch (tipo){
             case PEQUENO:
                 score += 100;
+                xpGanho = 10;
                 break;
 
             case MEDIO:
                 score += 200;
+                xpGanho = 20;
                 break;
 
             case GRANDE:
                 score += 300;
+                xpGanho = 30;
                 break;
         }
 
-        System.out.println("Score: " + score);
+        player.adicionarXP(xpGanho);
+
+        textoScore.setText("SCORE: " + score);
+
+        System.out.println("Score: " + score
+                + " | XP ganho: " + xpGanho
+                + " | XP atual: " + player.getXp() + player.getXpNecessario()
+        );
     }
 
     // ==========================================================
@@ -463,6 +479,57 @@ public class Main extends SimpleApplication {
         textoScore.setLocalTranslation(10, cam.getHeight() - 100, 0);
 
         guiNode.attachChild(textoScore);
+
+        // ==========================================================
+        // NÍVEL
+        // ==========================================================
+
+        textoNivel = new BitmapText(fonte);
+
+        textoNivel.setSize(24);
+
+        textoNivel.setColor(ColorRGBA.White);
+
+        textoNivel.setText("NÍVEL: " + player.getNivel());
+
+        textoNivel.setLocalTranslation(10, cam.getHeight() - 130, 0);
+
+        guiNode.attachChild(textoNivel);
+
+        // ==========================================================
+        // XP
+        // ==========================================================
+
+        textoXP = new BitmapText(fonte);
+
+        textoXP.setSize(20);
+
+        textoXP.setColor(ColorRGBA.White);
+
+        textoXP.setText(
+                "XP: " + player.getXp()
+                + " / "
+                + player.getXpNecessario()
+        );
+
+        textoXP.setLocalTranslation(10, cam.getHeight() - 160, 0);
+
+        guiNode.attachChild(textoXP);
+
+        // ==========================================================
+        // ESCUDOS
+        // ==========================================================
+        TextoEscudo = new BitmapText(fonte);
+
+        TextoEscudo.setSize(20);
+
+        TextoEscudo.setColor(ColorRGBA.White);
+
+        TextoEscudo.setText("ESCUDOS: " + player.getEscudos());
+
+        TextoEscudo.setLocalTranslation(10, cam.getHeight() - 190, 0);
+
+        guiNode.attachChild(TextoEscudo);
 
         // ==========================================================
         // BARRA DE VIDA
@@ -982,23 +1049,91 @@ public class Main extends SimpleApplication {
     private void atirar(){
         Vector3f posicaoJogador = player.getNode().getWorldTranslation().clone();
 
-        /*
-        * A nave se movimenta no eixo Z.
-        * O disparo sai pela frente dela.
-        * Que neste projeto é o eixo Z negativo.
-        */
+        int nivelDisparo = player.getNivelMultiDisparo();
 
-        Vector3f direcao = Vector3f.UNIT_Z.negate();
+        // =========================================
+        // DISPARO PARA FRENTE
+        // =========================================
+        criarProjetil(
+                posicaoJogador, Vector3f.UNIT_Z.negate()
+        );
 
-        Vector3f posicaoInicial = posicaoJogador.add(direcao.mult(2.5f));
+        // =========================================
+        // NÍVEL 1
+        // FRENTE = TRÁS
+        // =========================================
+        if(nivelDisparo >= 1){
+            criarProjetil(
+                    posicaoJogador, Vector3f.UNIT_Z
+            );
+        }
 
-        Projetil projetil = new Projetil(assetManager, posicaoInicial, direcao);
+        // =========================================
+        // NÍVEL 2
+        // FRENTE = TRÁS + ESQUERDA + DIREITA
+        // =========================================
+        if(nivelDisparo >= 2){
+            criarProjetil(
+                    posicaoJogador, Vector3f.UNIT_X.negate()
+            );
+            criarProjetil(
+                    posicaoJogador, Vector3f.UNIT_X
+            );
+        }
+
+        System.out.println(
+                "Player atirou! Nível de disparo: " + nivelDisparo
+        );
+    }
+
+    // ==========================================================
+    // CRIAR PROJÉTIL
+    // ==========================================================
+    private void criarProjetil(
+        Vector3f posicaoJogador,
+        Vector3f direcao
+    ) {
+        Vector3f posicaoInicial = posicaoJogador.clone().add(
+            direcao.mult(2.5f)
+        );
+
+        Projetil projetil = new Projetil(
+                assetManager,
+                posicaoInicial,
+                direcao
+        );
 
         projeteis.add(projetil);
 
         rootNode.attachChild(projetil.getNode());
+    }
 
-        System.out.println("PROJÉTIL DISPARADO!");
+    // ==========================================================
+    // APLICAR UPGRADES
+    // ==========================================================
+    private void aplicarUpgrades(TipoUpgrade tipo) {
+
+        switch (tipo){
+                case VIDA_MAXIMA:
+                        player.aumentarVidaMaxima(20);
+                        break;
+                
+                case REGENERACAO:
+                        player.curar(30);
+                        break;
+                
+                case ESCUDO:
+                        player.adicionarEscudo();
+                        break;
+                
+                case VELOCIDADE:
+                        player.aumentarVelocidade(1f);
+                        break;
+
+                case MULTI_DISPARO:
+                        player.aumentarNivelMultiDisparo();
+                        break;
+        }
     }
 
     // ==========================================================
@@ -1181,15 +1316,31 @@ public class Main extends SimpleApplication {
             boolean colidiu = distanciaX <= 3.0f && distanciaY <= 1.2f && distanciaZ <= 2.5f;
 
             if(colidiu) {
-                player.receberDano(10);
+                int dano = 0;
+
+                switch (inimigo.getTipo()) {
+                    case PEQUENO:
+                        dano = 10;
+                        break;
+
+                    case MEDIO:
+                        dano = 20;
+                        break;
+
+                    case GRANDE:
+                        dano = 30;
+                        break;
+                }
+
+                player.receberDano(dano);
 
                 rootNode.detachChild(inimigo.getNode());
-
                 inimigos.remove(i);
 
-                System.out.println("O jogador foi atingido");
+                System.out.println("O jogador foi atingido por um " + inimigo.getTipo()
+                + "causando " + dano + " de dano.");
 
-                if(player.getVida() <= 0){
+                if(player.getVida() <= 0) {
                     jogadorMorreu();
                 }
             }
@@ -1303,6 +1454,9 @@ public class Main extends SimpleApplication {
     // ==========================================================
 
     private void reiniciarJogo() {
+
+        score = 0;
+        textoScore.setText("SCORE: " + score);
 
         limparInimigos();
         limparProjeteis();
@@ -1514,6 +1668,18 @@ public class Main extends SimpleApplication {
                 + "/"
                 + player.getVidaMax()
         );
+
+        textoNivel.setText(
+                "NÍVEL: " + player.getNivel()
+        );
+
+        textoXP.setText(
+                "XP: " + player.getXp()
+                + " / "
+                + player.getXpNecessario()
+        );
+
+        TextoEscudo.setText("ESCUDOS: " + player.getEscudos());
 
         barraVida.atualizar(
                 player.getVida(),

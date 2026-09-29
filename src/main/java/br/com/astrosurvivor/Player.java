@@ -17,10 +17,37 @@ public class Player{
     private Geometry asaDireita;
     private Geometry cauda;
 
+
+    // =========================================
+    // MOVIMENTAÇÃO
+    // =========================================
     private float velocidade = 5f;
+
+    // =========================================
+    // VIDA
+    // =========================================
 
     private int vidaMax = 100;
     private int vidaAtual = vidaMax;
+
+    // =========================================
+    // ESCUDO
+    // =========================================
+    private int escudos = 0;
+
+    // =========================================
+    // XP
+    // =========================================
+    private int nivel = 1;
+    private int xp = 0;
+
+    // =========================================
+    // MULTI-DISPARO
+    // 0 = somente frente
+    // 1 = frente + trás
+    // 2 = =frente + trás + esq + dir
+    // =========================================
+    private int nivelMultiDisparo = 0;
 
     // =========================================
     // CRIA O PLAYER
@@ -147,23 +174,124 @@ public class Player{
             return;
         }
 
+        // =========================================
+        // ESCUDO ABSORVE O ATAQUE
+        // =========================================
+        if (escudos > 0) {
+            escudos--;
+            
+            System.out.println("ESCUDO BLOQUEOU O DANO! " + escudos + " ESCUDOS RESTANTES");
+
+            return;
+        }
+
+        // =========================================
+        // SEM ESCUDO, O PLAYER RECEBE DANO
+        // =========================================
         vidaAtual -= dano;
 
         if(vidaAtual < 0){
             vidaAtual = 0;
         }
 
-        System.out.println("Vida atual: " + vidaAtual + "/" + vidaMax);
+        System.out.println(
+            "Vida atual: " + vidaAtual + "/" + vidaMax
+        );
     }
 
-    public void curar(int conserto){
-        vidaAtual += conserto;
+    // =========================================
+    // CURAR
+    // =========================================
+    public void curar(int quantidade){
+        vidaAtual += quantidade;
 
         if(vidaAtual > vidaMax){
             vidaAtual = vidaMax;
         }
     }
 
+    // =========================================
+    // AUMENTAR A VIDA MÁXIMA
+    // =========================================
+    public void aumentarVidaMaxima(int quantidade){
+        vidaMax += quantidade;
+        vidaAtual += quantidade;
+
+        System.out.println(
+            "Vida máxima aumentada para: " + vidaMax
+        );
+    }
+
+    // =========================================
+    // AUMENTAR ESCUDO
+    // =========================================
+    public void adicionarEscudo() {
+        
+        escudos++;
+
+        System.out.println(
+            "Escudo adicionado! Total de escudos: " + escudos
+        );
+    }
+
+    // =========================================
+    // AUMENTAR VELOCIDADE
+    // =========================================
+    public void aumentarVelocidade(float quantidade){
+        velocidade += quantidade;
+
+        System.out.println(
+            "Velocidade aumentada para: " + velocidade
+        );
+    }
+
+    // =========================================
+    // MULTI-DISPARO
+    // =========================================
+    public void aumentarNivelMultiDisparo() {
+        
+        if (nivelMultiDisparo < 2) {
+            nivelMultiDisparo++;
+            System.out.println(
+                "Multi-disparo nível: " + nivelMultiDisparo
+            );
+        } else {
+            System.out.println(
+                "Nível máximo de multi-disparo atingido!"
+            );
+        }
+    }
+
+    // =========================================
+    // XP
+    // =========================================
+    public boolean adicionarXP(int quantidade){
+        xp += quantidade;
+
+        boolean subiuDeNivel = false;
+
+        while(xp >= getXpNecessario()){
+            xp -= getXpNecessario();
+            nivel++;
+            subiuDeNivel = true;
+
+            System.out.println(
+                "LEVEL UP! Agora o player está no nível: " + nivel
+            );
+        }
+        return subiuDeNivel;
+    }
+
+    // =========================================
+    // XP NECESSÁRIO PARA O PRÓXIMO NÍVEL
+    // =========================================
+    public int getXpNecessario(){
+        return 100 + (nivel - 1) * 50;
+    }
+
+    // =========================================
+    // GETTERS
+    // =========================================
     public int getVida(){
         return vidaAtual;
     }
@@ -176,9 +304,26 @@ public class Player{
         return vidaAtual > 0;
     }
 
-    // ========================================
-    // ACESSO AO NODE
-    // ========================================
+    public int getEscudos() {
+        return escudos;
+    }
+
+    public int getNivel() {
+        return nivel;
+    }
+
+    public int getXp() {
+        return xp;
+    }
+
+    public float getVelocidade() {
+        return velocidade;
+    }
+
+    public int getNivelMultiDisparo() {
+        return nivelMultiDisparo;
+    }
+
     public Node getNode(){
         return node;
     }
@@ -194,6 +339,9 @@ public class Player{
         return node.getLocalTranslation();
     }
 
+    // =========================================
+    // RESET
+    // =========================================
     public void resetarVida(){
         vidaAtual = vidaMax;
     }
