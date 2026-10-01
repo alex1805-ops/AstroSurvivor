@@ -8,19 +8,20 @@ import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 
-public class Player{
+public class Player {
+
     private Node node;
-    
+
     private Geometry corpo;
     private Geometry cabine;
     private Geometry asaEsquerda;
     private Geometry asaDireita;
     private Geometry cauda;
 
-
     // =========================================
     // MOVIMENTAÇÃO
     // =========================================
+
     private float velocidade = 5f;
 
     // =========================================
@@ -31,43 +32,66 @@ public class Player{
     private int vidaAtual = vidaMax;
 
     // =========================================
+    // REGENERAÇÃO
+    // =========================================
+
+    private int regeneracao = 0;
+
+    // =========================================
     // ESCUDO
     // =========================================
+
     private int escudos = 0;
 
     // =========================================
     // XP
     // =========================================
+
     private int nivel = 1;
     private int xp = 0;
 
     // =========================================
     // MULTI-DISPARO
-    // 0 = somente frente
+    //
+    // 0 = frente
     // 1 = frente + trás
-    // 2 = =frente + trás + esq + dir
+    // 2 = frente + trás + esquerda + direita
     // =========================================
+
     private int nivelMultiDisparo = 0;
 
     // =========================================
-    // CRIA O PLAYER
+    // CONSTRUTOR
     // =========================================
-    public Player(AssetManager assetManager){
+
+    public Player(AssetManager assetManager) {
 
         node = new Node("Player");
 
         // =========================================
         // CORPO
         // =========================================
-        Box formatoCorpo = new Box(0.7f, 0.3f, 1.8f);
 
-        corpo = new Geometry("Corpo", formatoCorpo);
-
-        Material materialCorpo = new Material(
-            assetManager, "Common/MatDefs/Misc/Unshaded.j3md"
+        Box formatoCorpo = new Box(
+                0.7f,
+                0.3f,
+                1.8f
         );
 
-        materialCorpo.setColor("Color", ColorRGBA.Blue);
+        corpo = new Geometry(
+                "Corpo",
+                formatoCorpo
+        );
+
+        Material materialCorpo = new Material(
+                assetManager,
+                "Common/MatDefs/Misc/Unshaded.j3md"
+        );
+
+        materialCorpo.setColor(
+                "Color",
+                ColorRGBA.Blue
+        );
 
         corpo.setMaterial(materialCorpo);
 
@@ -76,15 +100,27 @@ public class Player{
         // =========================================
         // CABINE
         // =========================================
-        Box formatoCabine = new Box(0.5f, 0.25f, 0.6f);
 
-        cabine = new Geometry("Cabine", formatoCabine);
-
-        Material materialCabine = new Material(
-            assetManager, "Common/MatDefs/Misc/Unshaded.j3md"
+        Box formatoCabine = new Box(
+                0.5f,
+                0.25f,
+                0.6f
         );
 
-        materialCabine.setColor("Color", ColorRGBA.Green);
+        cabine = new Geometry(
+                "Cabine",
+                formatoCabine
+        );
+
+        Material materialCabine = new Material(
+                assetManager,
+                "Common/MatDefs/Misc/Unshaded.j3md"
+        );
+
+        materialCabine.setColor(
+                "Color",
+                ColorRGBA.Green
+        );
 
         cabine.setMaterial(materialCabine);
 
@@ -93,171 +129,296 @@ public class Player{
         // =========================================
         // ASA ESQUERDA
         // =========================================
-        Box formatoAsaEsquerda = new Box(0.8f, 0.1f, 0.7f);
 
-        asaEsquerda = new Geometry("AsaEsquerda", formatoAsaEsquerda);
-
-        Material materialAsaEsquerda = new Material(
-            assetManager, "Common/MatDefs/Misc/Unshaded.j3md"
+        Box formatoAsaEsquerda = new Box(
+                0.8f,
+                0.1f,
+                0.7f
         );
 
-        materialAsaEsquerda.setColor("Color", ColorRGBA.Gray);
+        asaEsquerda = new Geometry(
+                "AsaEsquerda",
+                formatoAsaEsquerda
+        );
 
-        asaEsquerda.setMaterial(materialAsaEsquerda);
+        Material materialAsaEsquerda = new Material(
+                assetManager,
+                "Common/MatDefs/Misc/Unshaded.j3md"
+        );
 
-        asaEsquerda.setLocalTranslation(-1.2f, 0, 0);
+        materialAsaEsquerda.setColor(
+                "Color",
+                ColorRGBA.Gray
+        );
 
-        // INCLINA A ASA
-        asaEsquerda.rotate(0, 0.3f, 0);
+        asaEsquerda.setMaterial(
+                materialAsaEsquerda
+        );
 
-        node.attachChild(asaEsquerda);
+        asaEsquerda.setLocalTranslation(
+                -1.2f,
+                0,
+                0
+        );
+
+        asaEsquerda.rotate(
+                0,
+                0.3f,
+                0
+        );
+
+        node.attachChild(
+                asaEsquerda
+        );
 
         // =========================================
         // ASA DIREITA
         // =========================================
-        Box formatoAsaDireita = new Box(0.8f, 0.1f, 0.7f);
 
-        asaDireita = new Geometry("AsaDireita", formatoAsaDireita);
-
-        Material materialAsaDireita = new Material(
-            assetManager, "Common/MatDefs/Misc/Unshaded.j3md"
+        Box formatoAsaDireita = new Box(
+                0.8f,
+                0.1f,
+                0.7f
         );
 
-        materialAsaDireita.setColor("Color", ColorRGBA.White);
+        asaDireita = new Geometry(
+                "AsaDireita",
+                formatoAsaDireita
+        );
 
-        asaDireita.setMaterial(materialAsaDireita);
+        Material materialAsaDireita = new Material(
+                assetManager,
+                "Common/MatDefs/Misc/Unshaded.j3md"
+        );
 
-        asaDireita.setLocalTranslation(1.2f, 0, 0);
+        materialAsaDireita.setColor(
+                "Color",
+                ColorRGBA.White
+        );
 
-        // INCLINA A ASA
-        asaDireita.rotate(0, -0.3f, 0);
+        asaDireita.setMaterial(
+                materialAsaDireita
+        );
 
-        node.attachChild(asaDireita);
+        asaDireita.setLocalTranslation(
+                1.2f,
+                0,
+                0
+        );
+
+        asaDireita.rotate(
+                0,
+                -0.3f,
+                0
+        );
+
+        node.attachChild(
+                asaDireita
+        );
 
         // =========================================
         // CAUDA
         // =========================================
-        Box formatoCauda = new Box(0.4f, 0.5f, 0.4f);
 
-        cauda = new Geometry("Cauda", formatoCauda);
-
-        Material materialCauda = new Material(
-            assetManager, "Common/MatDefs/Misc/Unshaded.j3md"
+        Box formatoCauda = new Box(
+                0.4f,
+                0.5f,
+                0.4f
         );
 
-        materialCauda.setColor("Color", ColorRGBA.Red);
+        cauda = new Geometry(
+                "Cauda",
+                formatoCauda
+        );
 
-        cauda.setMaterial(materialCauda);
+        Material materialCauda = new Material(
+                assetManager,
+                "Common/MatDefs/Misc/Unshaded.j3md"
+        );
 
-        cauda.setLocalTranslation(0, 0.5f, 1.2f);
+        materialCauda.setColor(
+                "Color",
+                ColorRGBA.Red
+        );
+
+        cauda.setMaterial(
+                materialCauda
+        );
+
+        cauda.setLocalTranslation(
+                0,
+                0.5f,
+                1.2f
+        );
 
         node.attachChild(cauda);
     }
 
     // =========================================
-    // MOVIMENTAÇÃO
+    // MOVIMENTO
     // =========================================
-    public Vector3f mover(Vector3f direcao, float tpf){
-        
-        Vector3f movimento = direcao.mult(velocidade * tpf);
+
+    public Vector3f mover(
+            Vector3f direcao,
+            float tpf
+    ) {
+
+        Vector3f movimento =
+                direcao.mult(
+                        velocidade * tpf
+                );
 
         node.move(movimento);
+
         return movimento;
     }
 
     // =========================================
-    // SISTEMA DE VIDA
+    // DANO
     // =========================================
-    public void receberDano(int dano){
-        
-        if(!estaVivo()){
+
+    public void receberDano(int dano) {
+
+        if (!estaVivo()) {
             return;
         }
 
-        // =========================================
-        // ESCUDO ABSORVE O ATAQUE
-        // =========================================
+        // ESCUDO
         if (escudos > 0) {
+
             escudos--;
-            
-            System.out.println("ESCUDO BLOQUEOU O DANO! " + escudos + " ESCUDOS RESTANTES");
+
+            System.out.println(
+                    "ESCUDO BLOQUEOU O DANO!"
+            );
+
+            System.out.println(
+                    "Escudos restantes: "
+                    + escudos
+            );
 
             return;
         }
 
-        // =========================================
-        // SEM ESCUDO, O PLAYER RECEBE DANO
-        // =========================================
         vidaAtual -= dano;
 
-        if(vidaAtual < 0){
+        if (vidaAtual < 0) {
             vidaAtual = 0;
         }
 
         System.out.println(
-            "Vida atual: " + vidaAtual + "/" + vidaMax
+                "Vida atual: "
+                + vidaAtual
+                + "/"
+                + vidaMax
         );
     }
 
     // =========================================
-    // CURAR
+    // CURA
     // =========================================
-    public void curar(int quantidade){
+
+    public void curar(int quantidade) {
+
         vidaAtual += quantidade;
 
-        if(vidaAtual > vidaMax){
+        if (vidaAtual > vidaMax) {
             vidaAtual = vidaMax;
         }
     }
 
     // =========================================
-    // AUMENTAR A VIDA MÁXIMA
+    // VIDA MÁXIMA
     // =========================================
-    public void aumentarVidaMaxima(int quantidade){
+
+    public void aumentarVidaMaxima(
+            int quantidade
+    ) {
+
         vidaMax += quantidade;
+
         vidaAtual += quantidade;
 
         System.out.println(
-            "Vida máxima aumentada para: " + vidaMax
+                "Vida máxima: "
+                + vidaMax
         );
     }
 
     // =========================================
-    // AUMENTAR ESCUDO
+    // REGENERAÇÃO
     // =========================================
+
+    public void aumentarRegeneracao(
+            int quantidade
+    ) {
+
+        regeneracao += quantidade;
+
+        System.out.println(
+                "Regeneração aumentada para: "
+                + regeneracao
+        );
+    }
+
+    public int getRegeneracao() {
+
+        return regeneracao;
+    }
+
+    // =========================================
+    // ESCUDO
+    // =========================================
+
     public void adicionarEscudo() {
-        
+
         escudos++;
 
         System.out.println(
-            "Escudo adicionado! Total de escudos: " + escudos
+                "Escudo adicionado!"
+        );
+
+        System.out.println(
+                "Escudos: "
+                + escudos
         );
     }
 
     // =========================================
-    // AUMENTAR VELOCIDADE
+    // VELOCIDADE
     // =========================================
-    public void aumentarVelocidade(float quantidade){
+
+    public void aumentarVelocidade(
+            float quantidade
+    ) {
+
         velocidade += quantidade;
 
         System.out.println(
-            "Velocidade aumentada para: " + velocidade
+                "Velocidade: "
+                + velocidade
         );
     }
 
     // =========================================
     // MULTI-DISPARO
     // =========================================
+
     public void aumentarNivelMultiDisparo() {
-        
+
         if (nivelMultiDisparo < 2) {
+
             nivelMultiDisparo++;
+
             System.out.println(
-                "Multi-disparo nível: " + nivelMultiDisparo
+                    "Multi-disparo nível: "
+                    + nivelMultiDisparo
             );
+
         } else {
+
             System.out.println(
-                "Nível máximo de multi-disparo atingido!"
+                    "Multi-disparo já está no máximo!"
             );
         }
     }
@@ -265,42 +426,58 @@ public class Player{
     // =========================================
     // XP
     // =========================================
-    public boolean adicionarXP(int quantidade){
+
+    public boolean adicionarXP(
+            int quantidade
+    ) {
+
         xp += quantidade;
 
         boolean subiuDeNivel = false;
 
-        while(xp >= getXpNecessario()){
+        while (xp >= getXpNecessario()) {
+
             xp -= getXpNecessario();
+
             nivel++;
+
             subiuDeNivel = true;
 
             System.out.println(
-                "LEVEL UP! Agora o player está no nível: " + nivel
+                    "LEVEL UP!"
+            );
+
+            System.out.println(
+                    "Novo nível: "
+                    + nivel
             );
         }
+
         return subiuDeNivel;
     }
 
     // =========================================
-    // XP NECESSÁRIO PARA O PRÓXIMO NÍVEL
+    // XP NECESSÁRIO
     // =========================================
-    public int getXpNecessario(){
+
+    public int getXpNecessario() {
+
         return 100 + (nivel - 1) * 50;
     }
 
     // =========================================
     // GETTERS
     // =========================================
-    public int getVida(){
+
+    public int getVida() {
         return vidaAtual;
     }
 
-    public int getVidaMax(){
+    public int getVidaMax() {
         return vidaMax;
     }
 
-    public boolean estaVivo(){
+    public boolean estaVivo() {
         return vidaAtual > 0;
     }
 
@@ -324,25 +501,30 @@ public class Player{
         return nivelMultiDisparo;
     }
 
-    public Node getNode(){
+    public Node getNode() {
         return node;
     }
 
-    // ========================================
-    // POSIÇÃO
-    // ========================================
-    public void setPosition(Vector3f position){
-        node.setLocalTranslation(position);
+    public void setPosition(
+            Vector3f position
+    ) {
+
+        node.setLocalTranslation(
+                position
+        );
     }
 
-    public Vector3f getPosition(){
+    public Vector3f getPosition() {
+
         return node.getLocalTranslation();
     }
 
     // =========================================
-    // RESET
+    // RESET VIDA
     // =========================================
-    public void resetarVida(){
+
+    public void resetarVida() {
+
         vidaAtual = vidaMax;
     }
 }
