@@ -828,6 +828,8 @@ public class Main extends SimpleApplication {
         // ==========================================================
         private void atirar() {
 
+                audioManager.tocarTiro();
+
                 Vector3f posicaoJogador = player.getNode().getWorldTranslation().clone();
 
                 int nivelDisparo = player.getNivelMultiDisparo();

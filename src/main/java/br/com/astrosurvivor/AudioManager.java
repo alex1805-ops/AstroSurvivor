@@ -54,13 +54,26 @@ public class AudioManager {
 
     private void tocarEfeito(String caminho) {
 
-        AudioNode som = new AudioNode(assetManager, caminho, false);
+        try {
 
-        som.setPositional(false);
-        som.setVolume(1.0f);
+            AudioNode som = new AudioNode(
+                    assetManager,
+                    caminho,
+                    false
+            );
 
-        audioNode.attachChild(som);
+            som.setPositional(false);
+            som.setVolume(1.0f);
 
-        som.play();
+            audioNode.attachChild(som);
+
+            som.play();
+
+        } catch (Exception e) {
+
+            System.out.println(
+                    "Áudio não encontrado: " + caminho
+            );
+        }
     }
 }
