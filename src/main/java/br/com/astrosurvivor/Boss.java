@@ -120,9 +120,12 @@ public class Boss {
 
         Box forma = new Box(tamanho, tamanho, tamanho);
 
-        Geometry corpo = new Geometry("CorpoBoss_" + forma);
+        Geometry corpo = new Geometry("CorpoBoss", forma);
 
-        Material material = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        Material material = new Material(
+            assetManager,
+            "Common/MatDefs/Misc/Unshaded.j3md"
+        );
 
         material.setColor("Color", cor);
 

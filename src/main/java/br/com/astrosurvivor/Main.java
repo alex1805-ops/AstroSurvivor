@@ -1,31 +1,26 @@
 package br.com.astrosurvivor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.jme3.app.SimpleApplication;
-import com.jme3.system.AppSettings;
-import com.jme3.math.Vector3f;
-import com.jme3.math.Vector2f;
-
-import com.jme3.input.KeyInput;
-import com.jme3.input.MouseInput;
-import com.jme3.input.controls.KeyTrigger;
-import com.jme3.input.controls.MouseButtonTrigger;
-import com.jme3.input.controls.AnalogListener;
-import com.jme3.input.controls.ActionListener;
-
 import com.jme3.font.BitmapFont;
 import com.jme3.font.BitmapText;
-
-import com.jme3.math.ColorRGBA;
-
+import com.jme3.input.KeyInput;
+import com.jme3.input.MouseInput;
+import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.AnalogListener;
+import com.jme3.input.controls.KeyTrigger;
+import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
-
+import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector2f;
+import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Quad;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.jme3.system.AppSettings;
 
 public class Main extends SimpleApplication {
 
@@ -36,6 +31,7 @@ public class Main extends SimpleApplication {
         private Player player;
         private StarField starField;
         private GerenciadorBoss gerenciadorBoss;
+        private AudioManager audioManager;
 
         // ==========================================================
         // INIMIGOS
@@ -333,6 +329,7 @@ public class Main extends SimpleApplication {
 
                 // PLAYER
                 player = new Player(assetManager);
+                audioManager = new AudioManager(assetManager, rootNode);
                 player.setPosition(new Vector3f(0, 0, 0));
                 rootNode.attachChild(player.getNode());
 
@@ -730,7 +727,6 @@ public class Main extends SimpleApplication {
 
                         if (mouseDentro(mouseX, mouseY, botaoVoltarMenu)) {
                                 voltarAoMenu();
-                                return;
                         }
                 }
         }
@@ -789,11 +785,7 @@ public class Main extends SimpleApplication {
 
                 tempoSpawn = 0f;
 
-                menu.remover();
-
-                if (menuNode.getParent() != null) {
-                        menuNode.removeFromParent();
-                }
+                menuNode.setCullHint(Node.CullHint.Always);
 
                 menu.getNode().setCullHint(Node.CullHint.Always);
                 gameOverNode.setCullHint(Node.CullHint.Always);
@@ -1250,7 +1242,7 @@ public class Main extends SimpleApplication {
 
                 tempoSpawn = 0f;
 
-                player.resetarVida();
+                player.resetarProgresso();
 
                 player.setPosition(new Vector3f(0, 0, 0));
 
@@ -1290,7 +1282,11 @@ public class Main extends SimpleApplication {
 
                 gameOverNode.setCullHint(Node.CullHint.Always);
 
-                menu.getNode().setCullHint(Node.CullHint.Never);
+                if (menuNode.getParent() == null) {
+                        guiNode.attachChild(menuNode);
+                }
+
+                menuNode.setCullHint(Node.CullHint.Never);
 
                 player.getNode().setCullHint(Node.CullHint.Always);
                 starField.getNode().setCullHint(Node.CullHint.Always);

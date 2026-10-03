@@ -1,12 +1,12 @@
 package br.com.astrosurvivor;
 
-import com.jme3.asset.AssetManager;
-import com.jme3.math.Vector3f;
-import com.jme3.scene.Node;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import com.jme3.asset.AssetManager;
+import com.jme3.math.Vector3f;
+import com.jme3.scene.Node;
 
 public class GerenciadorBoss {
 
@@ -828,6 +828,7 @@ public class GerenciadorBoss {
         }
 
         bossAtivo = false;
+        bossTerminou = true;
 
         System.out.println(
                 "================================"

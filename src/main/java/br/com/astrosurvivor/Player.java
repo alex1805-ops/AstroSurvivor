@@ -1,12 +1,12 @@
 package br.com.astrosurvivor;
 
 import com.jme3.asset.AssetManager;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.Node;
-import com.jme3.scene.shape.Box;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
+import com.jme3.scene.shape.Box;
 
 public class Player {
 
@@ -526,5 +526,30 @@ public class Player {
     public void resetarVida() {
 
         vidaAtual = vidaMax;
+    }
+
+    public void resetarProgresso() {
+
+        // Vida
+        vidaMax = 100;
+        vidaAtual = vidaMax;
+
+        // Regeneração
+        regeneracao = 0;
+
+        // Escudos
+        escudos = 0;
+
+        // XP e nível
+        nivel = 1;
+        xp = 0;
+
+        // Velocidade
+        velocidade = 5f;
+
+        // Multi-disparo
+        nivelMultiDisparo = 0;
+
+        System.out.println("PROGRESSO DO JOGADOR RESETADO!");
     }
 }
