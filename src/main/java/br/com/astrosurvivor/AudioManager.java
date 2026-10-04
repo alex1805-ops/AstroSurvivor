@@ -3,77 +3,101 @@ package br.com.astrosurvivor;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioNode;
 import com.jme3.scene.Node;
-
 public class AudioManager {
+private final Node audioNode;
 
-    private final AssetManager assetManager;
-    private final Node audioNode;
+private final AudioNode tiro;
+private final AudioNode explosao;
+private final AudioNode dano;
+private final AudioNode gameOver;
+private final AudioNode levelUp;
+private final AudioNode bossInicio;
+private final AudioNode bossMorte;
+private final AudioNode upgrade;
+private final AudioNode clique;
 
-    public AudioManager(AssetManager assetManager, Node rootNode) {
-        this.assetManager = assetManager;
+public AudioManager(AssetManager assetManager, Node rootNode) {
 
-        audioNode = new Node("AudioManager");
-        rootNode.attachChild(audioNode);
-    }
+    audioNode = new Node("AudioManager");
+    rootNode.attachChild(audioNode);
 
-    public void tocarTiro() {
-        tocarEfeito("Sounds/tiro.ogg");
-    }
+    tiro = criarSom(assetManager, "Sounds/tiro.wav");
+    explosao = criarSom(assetManager, "Sounds/explosao.wav");
+    dano = criarSom(assetManager, "Sounds/dano.wav");
+    gameOver = criarSom(assetManager, "Sounds/gameover.wav");
+    levelUp = criarSom(assetManager, "Sounds/levelup.wav");
+    bossInicio = criarSom(assetManager, "Sounds/boss_inicio.wav");
+    bossMorte = criarSom(assetManager, "Sounds/boss_morte.wav");
+    upgrade = criarSom(assetManager, "Sounds/upgrade.wav");
+    clique = criarSom(assetManager, "Sounds/clique.wav");
 
-    public void tocarExplosao() {
-        tocarEfeito("Sounds/explosao.ogg");
-    }
+    audioNode.attachChild(tiro);
+    audioNode.attachChild(explosao);
+    audioNode.attachChild(dano);
+    audioNode.attachChild(gameOver);
+    audioNode.attachChild(levelUp);
+    audioNode.attachChild(bossInicio);
+    audioNode.attachChild(bossMorte);
+    audioNode.attachChild(upgrade);
+    audioNode.attachChild(clique);
+    System.out.println("ÁUDIOS CARREGADOS COM SUCESSO!");
+}
 
-    public void tocarDano() {
-        tocarEfeito("Sounds/dano.ogg");
-    }
+private AudioNode criarSom(AssetManager assetManager, String caminho) {
 
-    public void tocarGameOver() {
-        tocarEfeito("Sounds/gameover.ogg");
-    }
+    AudioNode som = new AudioNode(
+            assetManager,
+            caminho,
+            false
+    );
 
-    public void tocarLevelUp() {
-        tocarEfeito("Sounds/levelup.ogg");
-    }
+    som.setPositional(false);
+    som.setVolume(1.0f);
 
-    public void tocarBossInicio() {
-        tocarEfeito("Sounds/boss_inicio.ogg");
-    }
+    return som;
+}
 
-    public void tocarBossMorte() {
-        tocarEfeito("Sounds/boss_morte.ogg");
-    }
+public void tocarTiro() {
+    System.out.println("TOCANDO TIRO!");
+    tocar(tiro);
+}
 
-    public void tocarUpgrade() {
-        tocarEfeito("Sounds/upgrade.ogg");
-    }
+public void tocarExplosao() {
+    tocar(explosao);
+}
 
-    public void tocarClique() {
-        tocarEfeito("Sounds/clique.ogg");
-    }
+public void tocarDano() {
+    tocar(dano);
+}
 
-    private void tocarEfeito(String caminho) {
+public void tocarGameOver() {
+    tocar(gameOver);
+}
 
-        try {
+public void tocarLevelUp() {
+    tocar(levelUp);
+}
 
-            AudioNode som = new AudioNode(
-                    assetManager,
-                    caminho,
-                    false
-            );
+public void tocarBossInicio() {
+    tocar(bossInicio);
+}
 
-            som.setPositional(false);
-            som.setVolume(1.0f);
+public void tocarBossMorte() {
+    tocar(bossMorte);
+}
 
-            audioNode.attachChild(som);
+public void tocarUpgrade() {
+    tocar(upgrade);
+}
 
-            som.play();
+public void tocarClique() {
+    tocar(clique);
+}
 
-        } catch (Exception e) {
+private void tocar(AudioNode som) {
 
-            System.out.println(
-                    "Áudio não encontrado: " + caminho
-            );
-        }
-    }
+    som.stop();
+    som.play();
+}
+
 }
