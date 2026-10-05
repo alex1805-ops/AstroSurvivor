@@ -237,6 +237,10 @@ public class GerenciadorBoss {
 
         tempoSpawnHorda += tpf;
 
+        for (Inimigo inimigo : fragmentos) {
+                inimigo.atualizar(tpf);
+        }
+
         if (
                 tempoSpawnHorda
                         >= intervaloHorda
