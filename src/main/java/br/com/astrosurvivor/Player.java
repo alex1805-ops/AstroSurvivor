@@ -35,7 +35,7 @@ public class Player {
     // REGENERAÇÃO
     // =========================================
 
-    private int regeneracao = 0;
+    private int regeneracao = 30;
 
     // =========================================
     // ESCUDO

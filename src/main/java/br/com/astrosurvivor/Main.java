@@ -230,6 +230,7 @@ public class Main extends SimpleApplication {
                                                 upgrade = TipoUpgrade.MULTI_DISPARO;
                                 }
 
+                                audioManager.tocarClique();
                                 aplicarUpgrade(upgrade);
 
                                 finalizarEscolhaUpgrade();
@@ -267,21 +268,25 @@ public class Main extends SimpleApplication {
 
                         case PEQUENO:
                                 score += 100;
-                                xpGanho = 10;
+                                xpGanho = 50;
                                 break;
 
                         case MEDIO:
                                 score += 200;
-                                xpGanho = 20;
+                                xpGanho = 100;
                                 break;
 
                         case GRANDE:
                                 score += 300;
-                                xpGanho = 30;
+                                xpGanho = 150;
                                 break;
                 }
 
                 boolean subiuDeNivel = player.adicionarXP(xpGanho);
+
+                if(subiuDeNivel){
+                        audioManager.tocarLevelUp();
+                }
 
                 textoScore.setText("SCORE: " + score);
 
@@ -700,11 +705,13 @@ public class Main extends SimpleApplication {
                 if (estadoAtual == EstadoJogo.MENU) {
 
                         if (mouseDentro(mouseX, mouseY, menu.getAreaBotaoJogar())) {
+                                audioManager.tocarClique();
                                 iniciarJogo();
                                 return;
                         }
 
                         if (mouseDentro(mouseX, mouseY, menu.getAreaBotaoSair())) {
+                                audioManager.tocarClique();
                                 System.out.println("SAINDO DO JOGO...");
                                 stop();
                                 return;
@@ -721,11 +728,13 @@ public class Main extends SimpleApplication {
                 if (estadoAtual == EstadoJogo.GAME_OVER) {
 
                         if (mouseDentro(mouseX, mouseY, botaoJogarNovamente)) {
+                                audioManager.tocarClique();
                                 reiniciarJogo();
                                 return;
                         }
 
                         if (mouseDentro(mouseX, mouseY, botaoVoltarMenu)) {
+                                audioManager.tocarClique();
                                 voltarAoMenu();
                         }
                 }
@@ -809,6 +818,8 @@ public class Main extends SimpleApplication {
 
         private void jogadorMorreu() {
 
+                audioManager.tocarGameOver();
+
                 estadoAtual = EstadoJogo.GAME_OVER;
 
                 System.out.println("PLAYER FOI DE F!");
@@ -869,6 +880,8 @@ public class Main extends SimpleApplication {
         // APLICAR UPGRADES
         // ==========================================================
         private void aplicarUpgrade(TipoUpgrade tipo) {
+
+                audioManager.tocarUpgrade();
 
                 switch (tipo) {
 
@@ -959,6 +972,8 @@ public class Main extends SimpleApplication {
         // INICIAR BOSS
         // ==========================================================
         private void iniciarBoss() {
+
+                audioManager.tocarBossInicio();
 
                 System.out.println("================================");
                 System.out.println("ENTRANDO EM BOSS!");
@@ -1100,6 +1115,7 @@ public class Main extends SimpleApplication {
                                 }
 
                                 player.receberDano(dano);
+                                audioManager.tocarDano();
 
                                 rootNode.detachChild(inimigo.getNode());
                                 inimigos.remove(i);
@@ -1116,8 +1132,6 @@ public class Main extends SimpleApplication {
 
         // ==========================================================
         // COLISÃO ENTRE PROJÉTEIS E INIMIGOS
-        // CORRIGIDO: adicionarScore (que pode iniciar o boss e dar clear
-        // nas listas) agora é chamado só depois de mexer nas listas.
         // ==========================================================
         private void verificarColisoesProjetilInimigo() {
 
@@ -1154,6 +1168,8 @@ public class Main extends SimpleApplication {
 
                                                 rootNode.detachChild(inimigo.getNode());
                                                 inimigos.remove(i);
+
+                                                audioManager.tocarExplosao();
 
                                                 criarFragmentos(tipoMorto, posicaoDestruicao);
 
@@ -1357,6 +1373,8 @@ public class Main extends SimpleApplication {
                 }
 
                 if (gerenciadorBoss.acabouAgora()) {
+                        audioManager.tocarBossMorte();
+
                         limparProjeteis();
                         iniciarEscolhaUpgrade();
                 }
