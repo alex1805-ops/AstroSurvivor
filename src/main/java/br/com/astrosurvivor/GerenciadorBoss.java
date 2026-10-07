@@ -234,28 +234,21 @@ public class GerenciadorBoss {
     private void atualizarHorda(float tpf) {
 
         tempoHorda += tpf;
-
         tempoSpawnHorda += tpf;
 
         for (Inimigo inimigo : fragmentos) {
                 inimigo.atualizar(tpf);
         }
 
-        if (
-                tempoSpawnHorda
-                        >= intervaloHorda
+        if (tempoSpawnHorda >= intervaloHorda
         ) {
-
-            criarMeteoroHorda();
-
-            tempoSpawnHorda = 0f;
+                criarMeteoroHorda();
+                tempoSpawnHorda = 0f;
         }
 
         if (tempoHorda >= duracaoHorda) {
 
-            System.out.println(
-                    "HORDA DERROTADA!"
-            );
+            System.out.println("HORDA DERROTADA!");
 
             bossAtivo = false;
             bossTerminou = true;
@@ -277,13 +270,9 @@ public class GerenciadorBoss {
 
     private void criarMeteoroHorda() {
 
-        Vector3f posicaoPlayer =
-                player.getPosition();
+        Vector3f posicaoPlayer = player.getPosition();
 
-        int lado =
-                (int) (
-                        Math.random() * 4
-                );
+        int lado = (int) (Math.random() * 4);
 
         float distancia = 30f;
 
@@ -293,65 +282,22 @@ public class GerenciadorBoss {
 
             case 0:
 
-                posicao =
-                        posicaoPlayer.clone().add(
-                                (float)
-                                        (
-                                                Math.random()
-                                                        * 20f
-                                                        - 10f
-                                        ),
-                                0,
-                                distancia
-                        );
-
+                posicao = posicaoPlayer.clone().add((float)(Math.random() * 20f - 10f), 0, distancia);
                 break;
 
             case 1:
 
-                posicao =
-                        posicaoPlayer.clone().add(
-                                (float)
-                                        (
-                                                Math.random()
-                                                        * 20f
-                                                        - 10f
-                                        ),
-                                0,
-                                -distancia
-                        );
-
+                posicao = posicaoPlayer.clone().add((float)(Math.random() * 20f - 10f), 0, -distancia);
                 break;
 
             case 2:
 
-                posicao =
-                        posicaoPlayer.clone().add(
-                                -distancia,
-                                0,
-                                (float)
-                                        (
-                                                Math.random()
-                                                        * 20f
-                                                        - 10f
-                                        )
-                        );
-
+                posicao = posicaoPlayer.clone().add(-distancia, 0, (float)(Math.random() * 20f - 10f));
                 break;
 
             default:
 
-                posicao =
-                        posicaoPlayer.clone().add(
-                                distancia,
-                                0,
-                                (float)
-                                        (
-                                                Math.random()
-                                                        * 20f
-                                                        - 10f
-                                        )
-                        );
+                posicao = posicaoPlayer.clone().add(distancia, 0, (float)(Math.random() * 20f - 10f));
         }
 
         Inimigo inimigo =
@@ -364,9 +310,7 @@ public class GerenciadorBoss {
 
         fragmentos.add(inimigo);
 
-        rootNode.attachChild(
-                inimigo.getNode()
-        );
+        rootNode.attachChild(inimigo.getNode());
     }
 
     // =========================================

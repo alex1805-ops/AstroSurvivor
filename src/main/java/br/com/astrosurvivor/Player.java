@@ -36,6 +36,7 @@ public class Player {
     // =========================================
 
     private int regeneracao = 30;
+    private float acumuladorRegeneracao = 0f;
 
     // =========================================
     // ESCUDO
@@ -364,6 +365,25 @@ public class Player {
     public int getRegeneracao() {
 
         return regeneracao;
+    }
+
+    public void atualizarRegeneração(float tpf){
+        if(regeneracao <= 0){
+                return;
+        }
+
+        if(vidaAtual >= vidaMax){
+                acumuladorRegeneracao = 0f;
+                return;
+        }
+
+        acumuladorRegeneracao += regeneracao * tpf;
+
+        if(acumuladorRegeneracao >= 1f){
+                int cura = (int)acumuladorRegeneracao;
+                curar(cura);
+                acumuladorRegeneracao -= cura;
+        }
     }
 
     // =========================================

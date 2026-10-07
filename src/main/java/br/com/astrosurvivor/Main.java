@@ -230,11 +230,14 @@ public class Main extends SimpleApplication {
                                                 upgrade = TipoUpgrade.MULTI_DISPARO;
                                 }
 
+                                if(upgrade == TipoUpgrade.MULTI_DISPARO && player.getNivelMultiDisparo() >= 2){
+                                        System.out.println("NÍVEL MÁXIMO DE MULTI-DISPARO ATINGIDO!");
+                                } 
+
                                 audioManager.tocarClique();
+
                                 aplicarUpgrade(upgrade);
-
                                 finalizarEscolhaUpgrade();
-
                                 return;
                         }
                 }
