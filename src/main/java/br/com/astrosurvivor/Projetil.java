@@ -7,6 +7,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
+import com.jme3.math.Quaternion;
 
 public class Projetil {
     private final Node node;
@@ -37,6 +38,11 @@ public class Projetil {
         node.setLocalTranslation(posicaoInicial);
 
         this.direcao = direcao.normalize();
+
+        Quaternion rotacao = new Quaternion();
+        rotacao.lookAt(this.direcao, Vector3f.UNIT_Y);
+
+        node.setLocalRotation(rotacao);
     }
 
     public void atualizar(float tpf){

@@ -230,9 +230,9 @@ public class Main extends SimpleApplication {
                                                 upgrade = TipoUpgrade.MULTI_DISPARO;
                                 }
 
-                                if(upgrade == TipoUpgrade.MULTI_DISPARO && player.getNivelMultiDisparo() >= 2){
+                                if (upgrade == TipoUpgrade.MULTI_DISPARO && player.getNivelMultiDisparo() >= 2) {
                                         System.out.println("NÍVEL MÁXIMO DE MULTI-DISPARO ATINGIDO!");
-                                } 
+                                }
 
                                 audioManager.tocarClique();
 
@@ -287,7 +287,7 @@ public class Main extends SimpleApplication {
 
                 boolean subiuDeNivel = player.adicionarXP(xpGanho);
 
-                if(subiuDeNivel){
+                if (subiuDeNivel) {
                         audioManager.tocarLevelUp();
                 }
 
@@ -893,7 +893,7 @@ public class Main extends SimpleApplication {
                                 break;
 
                         case REGENERACAO:
-                                player.aumentarRegeneracao(30);
+                                player.aumentarRegeneracao();
                                 break;
 
                         case ESCUDO:
@@ -1345,6 +1345,9 @@ public class Main extends SimpleApplication {
         // ==========================================================
         private void atualizarBoss(float tpf) {
 
+                player.atualizarRegeneração(tpf);
+                player.atualizarEscudo(tpf);
+
                 gerenciadorBoss.atualizar(tpf);
 
                 gerenciadorBoss.verificarColisaoPlayer();
@@ -1430,6 +1433,9 @@ public class Main extends SimpleApplication {
                 if (estadoAtual != EstadoJogo.JOGANDO) {
                         return;
                 }
+
+                player.atualizarRegeneração(tpf);
+                player.atualizarEscudo(tpf);
 
                 limparProjeteisDistantes();
 
