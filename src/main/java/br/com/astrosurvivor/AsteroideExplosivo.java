@@ -35,14 +35,14 @@ public class AsteroideExplosivo {
             vida = 1500;
             velocidade = 1f;
 
-            raioExplosao = 7f;
+            raioExplosao = 18f;
             danoExplosao = 60;
 
         } else {
 
             vida = 30;
             velocidade = 8f;
-            raioExplosao = 3f;
+            raioExplosao = 5f;
             danoExplosao = 20;
         }
 
@@ -109,5 +109,13 @@ public class AsteroideExplosivo {
 
     public boolean isBoss() {
         return boss;
+    }
+
+    public int getVida() {
+        return vida;
+    }
+
+    public int getVidaMaxima() {
+        return boss ? 1500 : 30;
     }
 }

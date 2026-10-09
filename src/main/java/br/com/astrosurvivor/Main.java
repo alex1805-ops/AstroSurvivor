@@ -794,6 +794,7 @@ public class Main extends SimpleApplication {
         private void iniciarJogo() {
 
                 estadoAtual = EstadoJogo.JOGANDO;
+                audioManager.iniciarMotorNave();
 
                 tempoSpawn = 0f;
 
@@ -822,6 +823,7 @@ public class Main extends SimpleApplication {
         private void jogadorMorreu() {
 
                 audioManager.tocarGameOver();
+                audioManager.pararSonsContinuos();
 
                 estadoAtual = EstadoJogo.GAME_OVER;
 
@@ -1326,6 +1328,7 @@ public class Main extends SimpleApplication {
 
         private void mostrarMenu() {
 
+                audioManager.iniciarMusicaMenu();
                 estadoAtual = EstadoJogo.MENU;
 
                 menu.getNode().setCullHint(Node.CullHint.Never);
