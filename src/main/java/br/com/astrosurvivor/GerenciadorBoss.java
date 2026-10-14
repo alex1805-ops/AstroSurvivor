@@ -21,8 +21,7 @@ public class GerenciadorBoss {
         private final List<OndaChoque> ondasChoque = new ArrayList<>();
 
         private float tempoRestanteFragmentos = -1f;
-
-        private static final float LIMITE_FRAGMENTOS = 20f;
+        private static final float LIMITE_FRAGMENTOS = 40f;
 
         private float tempoProtecaoColisaoBoss = 0f;
 
@@ -70,6 +69,8 @@ public class GerenciadorBoss {
         public void iniciarBoss() {
 
                 limpar();
+
+                scoreHorda = 0;
 
                 tipoBossAtual = sortearBoss();
 
@@ -176,9 +177,7 @@ public class GerenciadorBoss {
                 }
 
                 for (int i = ondasChoque.size() - 1; i >= 0; i--) {
-
                         OndaChoque onda = ondasChoque.get(i);
-
                         onda.atualizar(tpf, player);
 
                         if (onda.terminou()) {
@@ -262,13 +261,19 @@ public class GerenciadorBoss {
                 }
 
                 if (tempoHorda >= duracaoHorda) {
+                        if (scoreHorda >= 1000) {
+                                System.out.println("HORDA DERROTADA!");
 
-                        System.out.println("HORDA DERROTADA!");
+                                bossAtivo = false;
+                                bossTerminou = true;
+                                limpar();
+                        } else {
+                                System.out.println("Você precisa de 1000 pontos na Horda. " + "Pontuação atual: "
+                                                + scoreHorda);
 
-                        bossAtivo = false;
-                        bossTerminou = true;
-
-                        limpar();
+                                tempoHorda = 0f;
+                                tempoSpawnHorda = 0f;
+                        }
                 }
         }
 
@@ -469,7 +474,8 @@ public class GerenciadorBoss {
                 Vector3f posicaoInicial = posicaoPlayer.clone().add(0, 0, -35f);
 
                 if (tipo == TipoBoss.METEORO_EXPLOSIVO) {
-                        AsteroideExplosivo explosivo = new AsteroideExplosivo(assetManager, posicaoInicial, posicaoPlayer, true);
+                        AsteroideExplosivo explosivo = new AsteroideExplosivo(assetManager, posicaoInicial,
+                                        posicaoPlayer, true);
                         explosivos.add(explosivo);
                         rootNode.attachChild(explosivo.getNode());
                 } else if (tipo != TipoBoss.HORDA) {
@@ -615,7 +621,7 @@ public class GerenciadorBoss {
 
                 scorePendente += pontos;
 
-                if(tipoBossAtual == TipoBoss.HORDA) {
+                if (tipoBossAtual == TipoBoss.HORDA) {
                         scoreHorda += pontos;
                 }
 
@@ -803,24 +809,21 @@ public class GerenciadorBoss {
 
                 if (bossAtual != null) {
 
-                        rootNode.detachChild(
-                                        bossAtual.getNode());
+                        rootNode.detachChild(bossAtual.getNode());
 
                         bossAtual = null;
                 }
 
                 for (Inimigo inimigo : fragmentos) {
 
-                        rootNode.detachChild(
-                                        inimigo.getNode());
+                        rootNode.detachChild(inimigo.getNode());
                 }
 
                 fragmentos.clear();
 
                 for (AsteroideExplosivo explosivo : explosivos) {
 
-                        rootNode.detachChild(
-                                        explosivo.getNode());
+                        rootNode.detachChild(explosivo.getNode());
                 }
 
                 explosivos.clear();
@@ -828,24 +831,80 @@ public class GerenciadorBoss {
                 bossAtivo = false;
         }
 
+         // ==========================================================
+        // LEITURA DE PONTUAÇÃO SEM XP
+        // ==========================================================
+        public int consumirScorePendente(){
+                int pontos = scorePendente;
+                scorePendente = 0;
+                return pontos;
+        }
+
         // =========================================
-        // COLISÃO DO PLAYER
+        // COLISÃO DO PLAYER COM OS BOSSES E ASTEROIDES
         // =========================================
 
         public void verificarColisaoPlayer() {
 
-                Vector3f posicaoPlayer = player.getPosition();
+                Vector3f posicaoPlayer = player.getPosition().clone();
 
                 // =====================================
-                // FRAGMENTOS
+                // COLISÃO COM O BOSS GIGANTE COMUM
+                // OU BLINDADO
+                // =====================================
+
+                if (bossAtual != null) {
+
+                        float distancia = posicaoPlayer.distance(
+                                        bossAtual.getPosicao());
+
+                        if (distancia <= 6f) {
+
+                                aplicarColisaoBoss(
+                                                bossAtual.getPosicao());
+
+                                // O boss continua existindo.
+                                // Não removemos nem destruímos ele.
+                                posicaoPlayer = player.getPosition().clone();
+                        }
+                }
+
+                // =====================================
+                // COLISÃO COM O BOSS EXPLOSIVO
+                // =====================================
+
+                for (AsteroideExplosivo explosivo : explosivos) {
+
+                        if (!explosivo.isBoss()) {
+                                continue;
+                        }
+
+                        float distancia = posicaoPlayer.distance(
+                                        explosivo.getPosicao());
+
+                        if (distancia <= 5f) {
+
+                                aplicarColisaoBoss(
+                                                explosivo.getPosicao());
+
+                                // O meteoro explosivo gigante
+                                // também permanece na tela.
+                                posicaoPlayer = player.getPosition().clone();
+                        }
+                }
+
+                // =====================================
+                // COLISÃO COM FRAGMENTOS
                 // =====================================
 
                 for (int i = fragmentos.size() - 1; i >= 0; i--) {
 
                         Inimigo inimigo = fragmentos.get(i);
 
-                        if (posicaoPlayer.distance(
-                                        inimigo.getPosicao()) <= 3f) {
+                        float distancia = posicaoPlayer.distance(
+                                        inimigo.getPosicao());
+
+                        if (distancia <= 3f) {
 
                                 int dano;
 
@@ -861,10 +920,10 @@ public class GerenciadorBoss {
 
                                         default:
                                                 dano = 30;
+                                                break;
                                 }
 
-                                player.receberDano(
-                                                dano);
+                                player.receberDano(dano);
 
                                 rootNode.detachChild(
                                                 inimigo.getNode());
@@ -874,15 +933,24 @@ public class GerenciadorBoss {
                 }
 
                 // =====================================
-                // EXPLOSIVOS
+                // COLISÃO COM ASTEROIDES EXPLOSIVOS
+                // PEQUENOS
                 // =====================================
 
                 for (int i = explosivos.size() - 1; i >= 0; i--) {
 
                         AsteroideExplosivo explosivo = explosivos.get(i);
 
-                        if (posicaoPlayer.distance(
-                                        explosivo.getPosicao()) <= 3f) {
+                        // O boss gigante nunca é removido
+                        // por colisão com o jogador.
+                        if (explosivo.isBoss()) {
+                                continue;
+                        }
+
+                        float distancia = player.getPosition().distance(
+                                        explosivo.getPosicao());
+
+                        if (distancia <= 3f) {
 
                                 player.receberDano(
                                                 explosivo.getDanoExplosao());
@@ -896,12 +964,94 @@ public class GerenciadorBoss {
         }
 
         // =========================================
+        // APLICAR DANO E EMPURRÃO AO COLIDIR COM BOSS
+        // =========================================
+
+        private void aplicarColisaoBoss(Vector3f posicaoBoss) {
+
+                // Impede que a colisão cause dano em todos
+                // os quadros consecutivos.
+                if (tempoProtecaoColisaoBoss > 0f) {
+                        return;
+                }
+
+                int vidaAtual = player.getVida();
+
+                if (vidaAtual <= 0) {
+                        return;
+                }
+
+                // Dano equivalente a 50% da vida atual.
+                int dano = Math.max(1, (int) Math.ceil(
+                                vidaAtual * 0.50));
+
+                player.receberDano(dano);
+
+                // Calcula a direção para afastar a nave do boss.
+                Vector3f direcaoEmpurrao = player.getPosition()
+                                .subtract(posicaoBoss);
+
+                // Evita erro caso as duas posições coincidam.
+                if (direcaoEmpurrao.lengthSquared() < 0.001f) {
+                        direcaoEmpurrao = Vector3f.UNIT_Z.clone();
+                }
+
+                direcaoEmpurrao.normalizeLocal();
+
+                // Empurra a nave para longe do boss.
+                player.setPosition(
+                                player.getPosition().add(
+                                                direcaoEmpurrao.mult(5f)));
+
+                // Intervalo entre colisões.
+                tempoProtecaoColisaoBoss = 1.5f;
+
+                System.out.println(
+                                "COLISÃO COM BOSS! Dano: " + dano);
+        }
+
+        // =========================================
+        // BARRA DE VIDA DO BOSS
+        // =========================================
+        public int getVidaBossAtual() {
+                if (bossAtual != null) {
+                        return bossAtual.getVida();
+                }
+
+                for (AsteroideExplosivo explosivo : explosivos) {
+                        if (explosivo.isBoss()) {
+                                return explosivo.getVida();
+                        }
+                }
+
+                return 0;
+        }
+
+        public int getVidaBossMaxima() {
+                if (bossAtual != null) {
+                        return bossAtual.getVidaMax();
+                }
+
+                for (AsteroideExplosivo explosivo : explosivos) {
+                        if (explosivo.isBoss()) {
+                                return explosivo.getVidaMax();
+                        }
+                }
+
+                return 0;
+        }
+
+        public int getScoreHorda(){
+                return scoreHorda;
+        }
+
+        // =========================================
         // QUANTIDADE DE FRAGMENTOS
         // =========================================
 
         public int getQuantidadeInimigos() {
 
-                return fragmentos.size()
-                                + explosivos.size();
+                return fragmentos.size() + explosivos.size();
         }
+
 }

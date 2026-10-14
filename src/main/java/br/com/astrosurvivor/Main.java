@@ -55,6 +55,7 @@ public class Main extends SimpleApplication {
 
         private BitmapText textoVida;
         private BarraVida barraVida;
+        private BarraVida barraVidaBoss;
         private int score = 0;
         private BitmapText textoScore;
         private BitmapText textoNivel;
@@ -133,8 +134,7 @@ public class Main extends SimpleApplication {
         // ==========================================================
 
         private boolean jogadorPodeAgir() {
-                return estadoAtual == EstadoJogo.JOGANDO
-                                || estadoAtual == EstadoJogo.BOSS;
+                return estadoAtual == EstadoJogo.JOGANDO || estadoAtual == EstadoJogo.BOSS;
         }
 
         // ==========================================================
@@ -441,6 +441,11 @@ public class Main extends SimpleApplication {
                 barraVida = new BarraVida(assetManager, 20, cam.getHeight() - 80);
                 guiNode.attachChild(barraVida.getNode());
                 barraVida.atualizar(player.getVida(), player.getVidaMax());
+
+                // BARRA DE VIDA DO BOSS
+                barraVidaBoss = new BarraVida(assetManager, (cam.getWidth() - 300f) / 2f, 30f);
+                guiNode.attachChild(barraVidaBoss.getNode());
+                barraVidaBoss.getNode().setCullHint(Node.CullHint.Always);
         }
 
         // ==========================================================
@@ -1261,6 +1266,8 @@ public class Main extends SimpleApplication {
                 limparProjeteis();
                 gerenciadorBoss.limpar();
 
+                barraVidaBoss.getNode().setCullHint(Node.CullHint.Always);
+
                 upgradeNode.setCullHint(Node.CullHint.Always);
 
                 tempoSpawn = 0f;
@@ -1352,6 +1359,19 @@ public class Main extends SimpleApplication {
                 player.atualizarEscudo(tpf);
 
                 gerenciadorBoss.atualizar(tpf);
+
+                score += gerenciadorBoss.consumirScorePendente();
+                textoScore.setText("SCORE: " + score);
+
+                int vidaBoss = gerenciadorBoss.getVidaBossAtual();
+                int vidaBossMax = gerenciadorBoss.getVidaBossMaxima();
+
+                if (vidaBossMax > 0) {
+                        barraVidaBoss.getNode().setCullHint(Node.CullHint.Never);
+                        barraVidaBoss.atualizar(vidaBoss, vidaBossMax);    
+                } else {
+                        barraVidaBoss.getNode().setCullHint(Node.CullHint.Always);
+                }
 
                 gerenciadorBoss.verificarColisaoPlayer();
 
