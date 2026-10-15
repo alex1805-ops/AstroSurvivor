@@ -36,6 +36,8 @@ public class GerenciadorBoss {
 
         private boolean bossTerminou = false;
 
+        private boolean tiroRefletidoPendente = false;
+
         // =========================================
         // HORDA
         // =========================================
@@ -174,16 +176,6 @@ public class GerenciadorBoss {
                 // =========================================
                 if (tempoProtecaoColisaoBoss > 0f) {
                         tempoProtecaoColisaoBoss -= tpf;
-                }
-
-                for (int i = ondasChoque.size() - 1; i >= 0; i--) {
-                        OndaChoque onda = ondasChoque.get(i);
-                        onda.atualizar(tpf, player);
-
-                        if (onda.terminou()) {
-                                rootNode.detachChild(onda.getNode());
-                                ondasChoque.remove(i);
-                        }
                 }
 
                 // =========================================
@@ -336,9 +328,7 @@ public class GerenciadorBoss {
         // PROJÉTIL ACERTA BOSS
         // =========================================
 
-        public boolean receberDano(
-                        Vector3f posicaoProjetil,
-                        int dano) {
+        public boolean receberDano(Vector3f posicaoProjetil, int dano) {
 
                 // =========================================
                 // BOSS PRINCIPAL
@@ -351,14 +341,19 @@ public class GerenciadorBoss {
 
                         if (distancia <= 5f) {
 
-                                bossAtual.receberDano(
-                                                dano);
+                                tiroRefletidoPendente = false;
 
-                                if (!bossAtual.estaVivo()) {
-
-                                        destruirBoss();
+                                if (tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE ||
+                                tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE_BLINDADO ||
+                                tipoBossAtual == TipoBoss.METEORO_EXPLOSIVO) {
+                                        tiroRefletidoPendente = Math.random() < 0.5;
                                 }
 
+                                bossAtual.receberDano(dano);
+
+                                if (!bossAtual.estaVivo()) {
+                                        destruirBoss();
+                                }
                                 return true;
                         }
                 }
@@ -411,6 +406,15 @@ public class GerenciadorBoss {
                 }
 
                 return false;
+        }
+
+        // =========================================
+        // CONSUMIR TIRO REFLETIDO
+        // =========================================
+        public boolean consumirTiroRefletido() {
+                boolean refletiu = tiroRefletidoPendente;
+                tiroRefletidoPendente = false;
+                return refletiu;
         }
 
         // =========================================
@@ -656,7 +660,7 @@ public class GerenciadorBoss {
                 OndaChoque onda = new OndaChoque(
                                 assetManager,
                                 posicao,
-                                eraBoss ? 18f : 5f,
+                                eraBoss ? 2f : 5f,
                                 eraBoss ? 22f : 10f,
                                 eraBoss ? 60 : 20);
 
@@ -831,10 +835,26 @@ public class GerenciadorBoss {
                 bossAtivo = false;
         }
 
-         // ==========================================================
+        // =========================================
+        // ATUALIZAR ONDAS DE CHOQUE
+        // =========================================
+        public void atualizarOndasChoque (float tpf){
+                for(int i = ondasChoque.size() - 1; i >= 0; i--){
+                        OndaChoque onda = ondasChoque.get(i);
+
+                        onda.atualizar(tpf, player);
+
+                        if(onda.terminou()){
+                                rootNode.detachChild(onda.getNode());
+                                ondasChoque.remove(i);
+                        }
+                }
+        }
+
+        // ==========================================================
         // LEITURA DE PONTUAÇÃO SEM XP
         // ==========================================================
-        public int consumirScorePendente(){
+        public int consumirScorePendente() {
                 int pontos = scorePendente;
                 scorePendente = 0;
                 return pontos;
@@ -1041,7 +1061,7 @@ public class GerenciadorBoss {
                 return 0;
         }
 
-        public int getScoreHorda(){
+        public int getScoreHorda() {
                 return scoreHorda;
         }
 

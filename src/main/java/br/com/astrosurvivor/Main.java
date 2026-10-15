@@ -128,6 +128,11 @@ public class Main extends SimpleApplication {
 
         private static final String TESTE_DANO = "TesteDano";
         private static final String CLIQUE_MOUSE = "CliqueMouse";
+        private static final String UPGRADE_1 = "Upgrade1";
+        private static final String UPGRADE_2 = "Upgrade2";
+        private static final String UPGRADE_3 = "Upgrade3";
+        private static final String UPGRADE_4 = "Upgrade4";
+        private static final String UPGRADE_5 = "Upgrade5";
 
         // ==========================================================
         // AUXILIAR: o jogador pode agir (andar/atirar)?
@@ -199,48 +204,80 @@ public class Main extends SimpleApplication {
                                         processarClique();
                                 }
                         }
+
+                        // ESCOLHA DOS UPGRADES
+                        if (estadoAtual == EstadoJogo.ESCOLHA_UPGRADE) {
+                                switch (name) {
+                                        case UPGRADE_1:
+                                                selecionarUpgrade(0);
+                                                return;
+
+                                        case UPGRADE_2:
+                                                selecionarUpgrade(1);
+                                                return;
+
+                                        case UPGRADE_3:
+                                                selecionarUpgrade(2);
+                                                return;
+
+                                        case UPGRADE_4:
+                                                selecionarUpgrade(3);
+                                                return;
+
+                                        case UPGRADE_5:
+                                                selecionarUpgrade(4);
+                                                return;
+                                
+                                        default:
+                                                break;
+                                }
+                        }
                 }
         };
 
         // ==========================================================
-        // PROCESSA CLIQUE UPGRADE
+        // PROCESSA UPGRADE
         // ==========================================================
-        private void processarCliqueUpgrade(float mouseX, float mouseY) {
-
-                for (int i = 0; i < 5; i++) {
-
-                        if (mouseDentro(mouseX, mouseY, botoesUpgrade[i])) {
-
-                                TipoUpgrade upgrade;
-
-                                switch (i) {
-                                        case 0:
-                                                upgrade = TipoUpgrade.VIDA_MAXIMA;
-                                                break;
-                                        case 1:
-                                                upgrade = TipoUpgrade.REGENERACAO;
-                                                break;
-                                        case 2:
-                                                upgrade = TipoUpgrade.ESCUDO;
-                                                break;
-                                        case 3:
-                                                upgrade = TipoUpgrade.VELOCIDADE;
-                                                break;
-                                        default:
-                                                upgrade = TipoUpgrade.MULTI_DISPARO;
-                                }
-
-                                if (upgrade == TipoUpgrade.MULTI_DISPARO && player.getNivelMultiDisparo() >= 2) {
-                                        System.out.println("NÍVEL MÁXIMO DE MULTI-DISPARO ATINGIDO!");
-                                }
-
-                                audioManager.tocarClique();
-
-                                aplicarUpgrade(upgrade);
-                                finalizarEscolhaUpgrade();
-                                return;
-                        }
+        private void selecionarUpgrade(int indice) {
+                if (estadoAtual != EstadoJogo.ESCOLHA_UPGRADE) {
+                        return;
                 }
+
+                if (indice < 0 || indice > 5) {
+                        return;
+                }
+
+                TipoUpgrade upgrade;
+
+                switch (indice) {
+                        case 0:
+                                upgrade = TipoUpgrade.VIDA_MAXIMA;
+                                break;
+                
+                        case 1:
+                                upgrade = TipoUpgrade.REGENERACAO;
+                                break;
+
+                        case 2:
+                                upgrade = TipoUpgrade.ESCUDO;
+
+                        case 3:
+                                upgrade = TipoUpgrade.VELOCIDADE;
+                                break;
+
+                        default:
+                                upgrade = TipoUpgrade.MULTI_DISPARO;
+                                break;
+                }
+
+                if (upgrade == TipoUpgrade.MULTI_DISPARO && player.getNivelMultiDisparo() >= 2) {
+                        System.out.println("NÍVEL MÁXIMO DE MULTI_DISPARO ATINGIDO!");
+                }
+
+                audioManager.tocarUpgrade();
+
+                aplicarUpgrade(upgrade);
+                finalizarEscolhaUpgrade();
         }
 
         // ==========================================================
@@ -379,6 +416,13 @@ public class Main extends SimpleApplication {
                 inputManager.addMapping(TESTE_DANO, new KeyTrigger(KeyInput.KEY_SPACE));
                 inputManager.addMapping(CLIQUE_MOUSE, new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
 
+                inputManager.addMapping(UPGRADE_1, new KeyTrigger(KeyInput.KEY_1));
+                inputManager.addMapping(UPGRADE_2, new KeyTrigger(KeyInput.KEY_2));
+                inputManager.addMapping(UPGRADE_3, new KeyTrigger(KeyInput.KEY_3));
+                inputManager.addMapping(UPGRADE_4, new KeyTrigger(KeyInput.KEY_4));
+                inputManager.addMapping(UPGRADE_5, new KeyTrigger(KeyInput.KEY_5));
+
+
                 inputManager.addListener(
                                 analogListener,
                                 MOVIMENTO_FRENTE,
@@ -389,7 +433,12 @@ public class Main extends SimpleApplication {
                 inputManager.addListener(
                                 actionListener,
                                 TESTE_DANO,
-                                CLIQUE_MOUSE);
+                                CLIQUE_MOUSE,
+                                UPGRADE_1,
+                                UPGRADE_2,
+                                UPGRADE_3,
+                                UPGRADE_4,
+                                UPGRADE_5);
         }
 
         // ==========================================================
@@ -724,12 +773,6 @@ public class Main extends SimpleApplication {
                                 stop();
                                 return;
                         }
-                }
-
-                // UPGRADE
-                if (estadoAtual == EstadoJogo.ESCOLHA_UPGRADE) {
-                        processarCliqueUpgrade(mouseX, mouseY);
-                        return;
                 }
 
                 // GAME OVER
@@ -1387,6 +1430,12 @@ public class Main extends SimpleApplication {
                         boolean acertou = gerenciadorBoss.receberDano(projetil.getPosicao(), 30);
 
                         if (acertou) {
+                                if(gerenciadorBoss.consumirTiroRefletido()){
+                                        System.out.println("O BOSS REFLETIU O TIRO!");
+
+                                        player.receberDano(30);
+                                }
+
                                 rootNode.detachChild(projetil.getNode());
                                 projeteis.remove(i);
                         }
@@ -1415,6 +1464,8 @@ public class Main extends SimpleApplication {
 
         @Override
         public void simpleUpdate(float tpf) {
+
+                gerenciadorBoss.atualizarOndasChoque(tpf);
 
                 if (estadoAtual == EstadoJogo.BOSS) {
                         atualizarBoss(tpf);
