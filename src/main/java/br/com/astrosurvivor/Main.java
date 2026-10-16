@@ -48,6 +48,7 @@ public class Main extends SimpleApplication {
         // PROJÉTEIS
         // ==========================================================
         private final List<Projetil> projeteis = new ArrayList<>();
+        private final List<Projetil> projeteisRefletidos = new ArrayList<>();
 
         // ==========================================================
         // HUD
@@ -227,7 +228,7 @@ public class Main extends SimpleApplication {
                                         case UPGRADE_5:
                                                 selecionarUpgrade(4);
                                                 return;
-                                
+
                                         default:
                                                 break;
                                 }
@@ -253,7 +254,7 @@ public class Main extends SimpleApplication {
                         case 0:
                                 upgrade = TipoUpgrade.VIDA_MAXIMA;
                                 break;
-                
+
                         case 1:
                                 upgrade = TipoUpgrade.REGENERACAO;
                                 break;
@@ -389,7 +390,7 @@ public class Main extends SimpleApplication {
                 cam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
 
                 // FONTE
-                BitmapFont fonte = assetManager.loadFont("Interface/Fonts/Default.fnt");
+                BitmapFont fonte = assetManager.loadFont("Interface/Fonts/Orbitron.fnt");
 
                 criarHUD(fonte);
                 criarGameOver(fonte);
@@ -421,7 +422,6 @@ public class Main extends SimpleApplication {
                 inputManager.addMapping(UPGRADE_3, new KeyTrigger(KeyInput.KEY_3));
                 inputManager.addMapping(UPGRADE_4, new KeyTrigger(KeyInput.KEY_4));
                 inputManager.addMapping(UPGRADE_5, new KeyTrigger(KeyInput.KEY_5));
-
 
                 inputManager.addListener(
                                 analogListener,
@@ -929,6 +929,69 @@ public class Main extends SimpleApplication {
                 rootNode.attachChild(projetil.getNode());
         }
 
+        private void criarProjetilRefletido(
+                        Vector3f posicaoOrigem,
+                        Vector3f posicaoAlvo) {
+
+                Vector3f direcao = posicaoAlvo.clone()
+                                .subtractLocal(posicaoOrigem);
+
+                if (direcao.lengthSquared() < 0.001f) {
+                        return;
+                }
+
+                direcao.normalizeLocal();
+
+                // O tiro nasce um pouco fora do asteroide.
+                Vector3f posicaoInicial = posicaoOrigem.clone()
+                                .addLocal(direcao.mult(2.5f));
+
+                Projetil projetil = new Projetil(
+                                assetManager,
+                                posicaoInicial,
+                                direcao,
+                                ColorRGBA.Red);
+
+                projeteisRefletidos.add(projetil);
+                rootNode.attachChild(projetil.getNode());
+        }
+
+        private void atualizarProjeteisRefletidos(float tpf) {
+
+                for (int i = projeteisRefletidos.size() - 1; i >= 0; i--) {
+
+                        Projetil projetil = projeteisRefletidos.get(i);
+                        projetil.atualizar(tpf);
+
+                        Vector3f posicaoProjetil = projetil.getPosicao();
+                        Vector3f posicaoNave = player.getNode().getWorldTranslation();
+
+                        if (posicaoProjetil.distance(posicaoNave) <= 1.5f) {
+
+                                rootNode.detachChild(projetil.getNode());
+                                projeteisRefletidos.remove(i);
+
+                                // Dano aplicado somente quando o tiro atinge a nave.
+                                player.receberDano(10);
+
+                        } else if (posicaoProjetil.distance(posicaoNave) > 60f) {
+
+                                // Remove tiros que já passaram longe da nave.
+                                rootNode.detachChild(projetil.getNode());
+                                projeteisRefletidos.remove(i);
+                        }
+                }
+        }
+
+        private void limparProjeteisRefletidos() {
+
+                for (Projetil projetil : projeteisRefletidos) {
+                        rootNode.detachChild(projetil.getNode());
+                }
+
+                projeteisRefletidos.clear();
+        }
+
         // ==========================================================
         // APLICAR UPGRADES
         // ==========================================================
@@ -1027,6 +1090,7 @@ public class Main extends SimpleApplication {
         private void iniciarBoss() {
 
                 audioManager.tocarBossInicio();
+                audioManager.iniciarMusicaBoss();
 
                 System.out.println("================================");
                 System.out.println("ENTRANDO EM BOSS!");
@@ -1346,6 +1410,7 @@ public class Main extends SimpleApplication {
                 limparInimigos();
                 limparProjeteis();
                 gerenciadorBoss.limpar();
+                audioManager.pararSonsContinuos();
 
                 upgradeNode.setCullHint(Node.CullHint.Always);
 
@@ -1370,6 +1435,8 @@ public class Main extends SimpleApplication {
                 inputManager.setCursorVisible(true);
 
                 System.out.println("VOLTANDO AO MENU...");
+
+                audioManager.iniciarMusicaMenu();
         }
 
         // ==========================================================
@@ -1411,7 +1478,7 @@ public class Main extends SimpleApplication {
 
                 if (vidaBossMax > 0) {
                         barraVidaBoss.getNode().setCullHint(Node.CullHint.Never);
-                        barraVidaBoss.atualizar(vidaBoss, vidaBossMax);    
+                        barraVidaBoss.atualizar(vidaBoss, vidaBossMax);
                 } else {
                         barraVidaBoss.getNode().setCullHint(Node.CullHint.Always);
                 }
@@ -1430,16 +1497,22 @@ public class Main extends SimpleApplication {
                         boolean acertou = gerenciadorBoss.receberDano(projetil.getPosicao(), 30);
 
                         if (acertou) {
-                                if(gerenciadorBoss.consumirTiroRefletido()){
-                                        System.out.println("O BOSS REFLETIU O TIRO!");
+                                Vector3f origemReflexao = gerenciadorBoss.consumirPosicaoTiroRefletido();
 
-                                        player.receberDano(30);
+                                if (origemReflexao != null) {
+                                        System.out.println("O BOSS REFLETIU O TIRO");
+
+                                        Vector3f posicaoNave = player.getNode().getWorldTranslation().clone();
+
+                                        criarProjetilRefletido(origemReflexao, posicaoNave);
                                 }
 
                                 rootNode.detachChild(projetil.getNode());
                                 projeteis.remove(i);
                         }
                 }
+
+                atualizarProjeteisRefletidos(tpf);
 
                 limparProjeteisDistantes();
 
@@ -1451,10 +1524,13 @@ public class Main extends SimpleApplication {
                 }
 
                 if (gerenciadorBoss.acabouAgora()) {
+                        audioManager.pararMusicaBoss();
                         audioManager.tocarBossMorte();
 
                         limparProjeteis();
                         iniciarEscolhaUpgrade();
+
+                        audioManager.iniciarMotorNave();
                 }
         }
 
@@ -1464,6 +1540,12 @@ public class Main extends SimpleApplication {
 
         @Override
         public void simpleUpdate(float tpf) {
+
+                if (estadoAtual != EstadoJogo.BOSS) {
+                        barraVidaBoss.getNode().setCullHint(Node.CullHint.Always);
+
+                        limparProjeteisRefletidos();
+                }
 
                 gerenciadorBoss.atualizarOndasChoque(tpf);
 

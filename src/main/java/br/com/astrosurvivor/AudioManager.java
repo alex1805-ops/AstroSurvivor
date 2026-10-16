@@ -3,6 +3,7 @@ package br.com.astrosurvivor;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioNode;
 import com.jme3.scene.Node;
+import com.jme3.audio.AudioData;
 
 public class AudioManager {
 
@@ -14,6 +15,7 @@ public class AudioManager {
     private final AudioNode gameOver;
     private final AudioNode levelUp;
     private final AudioNode bossInicio;
+    private final AudioNode musicaBoss;
     private final AudioNode bossMorte;
     private final AudioNode upgrade;
     private final AudioNode clique;
@@ -35,11 +37,16 @@ public class AudioManager {
         upgrade = criarSom(assetManager, "Sounds/upgrade.wav", 1f);
         clique = criarSom(assetManager, "Sounds/clique.wav", 1f);
 
-        musicaMenu = criarSom(assetManager, "Sounds/musica_menu.wav", 0.30f);
+        musicaMenu = criarSom(assetManager, "Sounds/musica_menu.wav", 3.0f);
         musicaMenu.setLooping(true);
 
-        motorNave = criarSom(assetManager, "Sounds/som_motor_nave.wav", 0.18f);
+        motorNave = criarSom(assetManager, "Sounds/som_motor_nave.wav", 1f);
         motorNave.setLooping(true);
+
+        musicaBoss = new AudioNode(assetManager, "Sounds/the-fall-of-heroes.wav", AudioData.DataType.Stream);
+        musicaBoss.setPositional(false);
+        musicaBoss.setLooping(true);
+        musicaBoss.setVolume(1f);
 
         audioNode.attachChild(tiro);
         audioNode.attachChild(explosao);
@@ -52,6 +59,7 @@ public class AudioManager {
         audioNode.attachChild(clique);
         audioNode.attachChild(musicaMenu);
         audioNode.attachChild(motorNave);
+        audioNode.attachChild(musicaBoss);
     }
 
     private AudioNode criarSom(
@@ -67,9 +75,9 @@ public class AudioManager {
 
     public void iniciarMusicaMenu() {
         motorNave.stop();
+        musicaBoss.stop();
 
-        if (musicaMenu.getStatus()
-                != com.jme3.audio.AudioSource.Status.Playing) {
+        if (musicaMenu.getStatus() != com.jme3.audio.AudioSource.Status.Playing) {
             musicaMenu.play();
         }
     }
@@ -80,9 +88,9 @@ public class AudioManager {
 
     public void iniciarMotorNave() {
         musicaMenu.stop();
+        musicaBoss.stop();
 
-        if (motorNave.getStatus()
-                != com.jme3.audio.AudioSource.Status.Playing) {
+        if (motorNave.getStatus() != com.jme3.audio.AudioSource.Status.Playing) {
             motorNave.play();
         }
     }
@@ -91,20 +99,60 @@ public class AudioManager {
         motorNave.stop();
     }
 
+    public void iniciarMusicaBoss(){
+        musicaMenu.stop();
+        motorNave.stop();
+
+        if (musicaBoss.getStatus() != com.jme3.audio.AudioSource.Status.Playing) {
+            musicaBoss.play();
+        }
+    }
+
+    public void pararMusicaBoss() {
+        musicaBoss.stop();
+    }
+
     public void pararSonsContinuos() {
         musicaMenu.stop();
         motorNave.stop();
+        musicaBoss.stop();
     }
 
-    public void tocarTiro() { tocar(tiro); }
-    public void tocarExplosao() { tocar(explosao); }
-    public void tocarDano() { tocar(dano); }
-    public void tocarGameOver() { tocar(gameOver); }
-    public void tocarLevelUp() { tocar(levelUp); }
-    public void tocarBossInicio() { tocar(bossInicio); }
-    public void tocarBossMorte() { tocar(bossMorte); }
-    public void tocarUpgrade() { tocar(upgrade); }
-    public void tocarClique() { tocar(clique); }
+    public void tocarTiro() {
+        tocar(tiro);
+    }
+
+    public void tocarExplosao() {
+        tocar(explosao);
+    }
+
+    public void tocarDano() {
+        tocar(dano);
+    }
+
+    public void tocarGameOver() {
+        tocar(gameOver);
+    }
+
+    public void tocarLevelUp() {
+        tocar(levelUp);
+    }
+
+    public void tocarBossInicio() {
+        tocar(bossInicio);
+    }
+
+    public void tocarBossMorte() {
+        tocar(bossMorte);
+    }
+
+    public void tocarUpgrade() {
+        tocar(upgrade);
+    }
+
+    public void tocarClique() {
+        tocar(clique);
+    }
 
     private void tocar(AudioNode som) {
         som.stop();

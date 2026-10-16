@@ -38,6 +38,8 @@ public class GerenciadorBoss {
 
         private boolean tiroRefletidoPendente = false;
 
+        private Vector3f posicaoTiroRefletidoPendente;
+
         // =========================================
         // HORDA
         // =========================================
@@ -294,22 +296,18 @@ public class GerenciadorBoss {
                 switch (lado) {
 
                         case 0:
-
                                 posicao = posicaoPlayer.clone().add((float) (Math.random() * 20f - 10f), 0, distancia);
                                 break;
 
                         case 1:
-
                                 posicao = posicaoPlayer.clone().add((float) (Math.random() * 20f - 10f), 0, -distancia);
                                 break;
 
                         case 2:
-
                                 posicao = posicaoPlayer.clone().add(-distancia, 0, (float) (Math.random() * 20f - 10f));
                                 break;
 
                         default:
-
                                 posicao = posicaoPlayer.clone().add(distancia, 0, (float) (Math.random() * 20f - 10f));
                 }
 
@@ -330,23 +328,23 @@ public class GerenciadorBoss {
 
         public boolean receberDano(Vector3f posicaoProjetil, int dano) {
 
-                // =========================================
-                // BOSS PRINCIPAL
-                // =========================================
+                // Evita reutilizar uma reflexão de um tiro anterior.
+                tiroRefletidoPendente = false;
+                posicaoTiroRefletidoPendente = null;
 
+                // BOSS PRINCIPAL
                 if (bossAtual != null) {
 
-                        float distancia = posicaoProjetil.distance(
-                                        bossAtual.getPosicao());
+                        float distancia = posicaoProjetil.distance(bossAtual.getPosicao());
 
                         if (distancia <= 5f) {
 
-                                tiroRefletidoPendente = false;
+                                boolean podeRefletir = tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE
+                                                || tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE_BLINDADO;
 
-                                if (tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE ||
-                                tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE_BLINDADO ||
-                                tipoBossAtual == TipoBoss.METEORO_EXPLOSIVO) {
-                                        tiroRefletidoPendente = Math.random() < 0.5;
+                                if (podeRefletir && Math.random() < 0.5) {
+                                        tiroRefletidoPendente = true;
+                                        posicaoTiroRefletidoPendente = bossAtual.getPosicao().clone();
                                 }
 
                                 bossAtual.receberDano(dano);
@@ -354,41 +352,40 @@ public class GerenciadorBoss {
                                 if (!bossAtual.estaVivo()) {
                                         destruirBoss();
                                 }
+
                                 return true;
                         }
                 }
 
-                // =========================================
-                // EXPLOSIVOS
-                // =========================================
-
+                // METEOROS EXPLOSIVOS
                 for (int i = explosivos.size() - 1; i >= 0; i--) {
 
                         AsteroideExplosivo explosivo = explosivos.get(i);
 
-                        float distancia = posicaoProjetil.distance(
-                                        explosivo.getPosicao());
+                        float distancia = posicaoProjetil.distance(explosivo.getPosicao());
 
                         if (distancia <= 2f) {
 
-                                explosivo.receberDano(
-                                                dano);
+                                // Só o meteoro explosivo grande reflete tiros.
+                                if (explosivo.isBoss()
+                                                && tipoBossAtual == TipoBoss.METEORO_EXPLOSIVO
+                                                && Math.random() < 0.5) {
+
+                                        tiroRefletidoPendente = true;
+                                        posicaoTiroRefletidoPendente = explosivo.getPosicao().clone();
+                                }
+
+                                explosivo.receberDano(dano);
 
                                 if (!explosivo.estaVivo()) {
-
-                                        destruirExplosivo(
-                                                        explosivo,
-                                                        i);
+                                        destruirExplosivo(explosivo, i);
                                 }
 
                                 return true;
                         }
                 }
 
-                // =========================================
                 // FRAGMENTOS
-                // =========================================
-
                 for (int i = fragmentos.size() - 1; i >= 0; i--) {
 
                         Inimigo inimigo = fragmentos.get(i);
@@ -396,11 +393,13 @@ public class GerenciadorBoss {
                         float distancia = posicaoProjetil.distance(inimigo.getPosicao());
 
                         if (distancia <= 1.2f) {
+
                                 inimigo.receberDano(dano);
 
                                 if (!inimigo.estaVivo()) {
                                         destruirFragmento(inimigo, i);
                                 }
+
                                 return true;
                         }
                 }
@@ -411,10 +410,12 @@ public class GerenciadorBoss {
         // =========================================
         // CONSUMIR TIRO REFLETIDO
         // =========================================
-        public boolean consumirTiroRefletido() {
-                boolean refletiu = tiroRefletidoPendente;
+        public Vector3f consumirPosicaoTiroRefletido() {
+                Vector3f posicao = posicaoTiroRefletidoPendente;
+                posicaoTiroRefletidoPendente = null;
                 tiroRefletidoPendente = false;
-                return refletiu;
+
+                return posicao == null ? null : posicao.clone();
         }
 
         // =========================================
@@ -838,13 +839,13 @@ public class GerenciadorBoss {
         // =========================================
         // ATUALIZAR ONDAS DE CHOQUE
         // =========================================
-        public void atualizarOndasChoque (float tpf){
-                for(int i = ondasChoque.size() - 1; i >= 0; i--){
+        public void atualizarOndasChoque(float tpf) {
+                for (int i = ondasChoque.size() - 1; i >= 0; i--) {
                         OndaChoque onda = ondasChoque.get(i);
 
                         onda.atualizar(tpf, player);
 
-                        if(onda.terminou()){
+                        if (onda.terminou()) {
                                 rootNode.detachChild(onda.getNode());
                                 ondasChoque.remove(i);
                         }
