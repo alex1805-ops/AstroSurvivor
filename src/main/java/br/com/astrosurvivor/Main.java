@@ -21,6 +21,8 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Quad;
 import com.jme3.system.AppSettings;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 public class Main extends SimpleApplication {
 
@@ -41,8 +43,14 @@ public class Main extends SimpleApplication {
 
         private float tempoSpawn = 0f;
 
-        // Tempo entre o nascimento de cada meteoro
-        private final float intervaloSpawn = 2.0f;
+        // Intervalo inicial entre os spans de asteroides
+        private final float intervaloSpawnInicial = 2.0f;
+
+        // Redução do intervalo a cada 10 níveis
+        private final float reducaoSpawnPorMarco = 0.2f;
+
+        // Intervalo mínimo entre os spawns
+        private final float intervaloSpawnMinimo = 0.5f;
 
         // ==========================================================
         // PROJÉTEIS
@@ -62,6 +70,18 @@ public class Main extends SimpleApplication {
         private BitmapText textoNivel;
         private BitmapText textoXP;
         private BitmapText TextoEscudo;
+
+        private TelaPause telaPause;
+
+        private String nickJogador = "Jogador";
+        private final RankingManager rankingManager = new RankingManager();
+
+        private BitmapText textoRanking;
+        private boolean recordeSalvoNaPartida = false;
+
+        private EstadoJogo estadoAntesPause = EstadoJogo.JOGANDO;
+
+        private static final String PAUSAR = "Pausar";
 
         // ==========================================================
         // MENU
@@ -109,7 +129,8 @@ public class Main extends SimpleApplication {
                 JOGANDO,
                 BOSS,
                 ESCOLHA_UPGRADE,
-                GAME_OVER
+                GAME_OVER,
+                PAUSADO
         }
 
         private EstadoJogo estadoAtual = EstadoJogo.MENU;
@@ -184,6 +205,16 @@ public class Main extends SimpleApplication {
                                 return;
                         }
 
+                        // PAUSAR
+                        if (name.equals(PAUSAR)) {
+                                if (estadoAtual == EstadoJogo.JOGANDO || estadoAtual == EstadoJogo.BOSS) {
+                                        pausarJogo();
+                                } else if (estadoAtual == EstadoJogo.PAUSADO) {
+                                        continuarJogo();
+                                }
+                                return;
+                        }
+
                         // TESTE DE DANO
                         if (name.equals(TESTE_DANO)) {
 
@@ -235,6 +266,25 @@ public class Main extends SimpleApplication {
                         }
                 }
         };
+
+        // ==========================================================
+        // PAUSE
+        // ==========================================================
+        private void pausarJogo() {
+                estadoAntesPause = estadoAtual;
+                estadoAtual = EstadoJogo.PAUSADO;
+
+                telaPause.mostrar();
+                inputManager.setCursorVisible(true);
+        }
+
+        private void continuarJogo() {
+                telaPause.esconder();
+                estadoAtual = estadoAntesPause;
+
+                inputManager.setCursorVisible(
+                                estadoAtual != EstadoJogo.JOGANDO && estadoAtual != EstadoJogo.BOSS);
+        }
 
         // ==========================================================
         // PROCESSA UPGRADE
@@ -343,19 +393,43 @@ public class Main extends SimpleApplication {
         // ==========================================================
         // MAIN
         // ==========================================================
-
         public static void main(String[] args) {
 
+                String nick;
+
+                while (true) {
+                        nick = JOptionPane.showInputDialog(
+                                        null,
+                                        "Digite seu nick para jogar:",
+                                        "Astro Survivor",
+                                        JOptionPane.QUESTION_MESSAGE);
+
+                        if (nick == null) {
+                                return;
+                        }
+
+                        nick = nick.trim();
+
+                        if (!nick.isBlank()) {
+                                break;
+                        }
+
+                        JOptionPane.showMessageDialog(
+                                        null,
+                                        "Digite um nick válido.",
+                                        "Nick inválido",
+                                        JOptionPane.WARNING_MESSAGE);
+                }
+
                 Main jogo = new Main();
+                jogo.nickJogador = nick;
 
                 AppSettings configuracoes = new AppSettings(true);
-
-                configuracoes.setTitle("Astro Survivor");
+                configuracoes.setTitle("Astro Survivor - " + nick);
                 configuracoes.setResolution(1280, 720);
                 configuracoes.setFullscreen(true);
 
                 jogo.setSettings(configuracoes);
-
                 jogo.start();
         }
 
@@ -400,8 +474,16 @@ public class Main extends SimpleApplication {
                 menu = new Menu(this);
                 menuNode = menu.getNode();
                 guiNode.attachChild(menuNode);
-
                 mostrarMenu();
+
+                // PAUSE
+                telaPause = new TelaPause(
+                                assetManager,
+                                fonte,
+                                cam.getWidth(),
+                                cam.getHeight());
+
+                guiNode.attachChild(telaPause.getNode());
         }
 
         // ==========================================================
@@ -409,6 +491,8 @@ public class Main extends SimpleApplication {
         // ==========================================================
 
         private void configurarControles() {
+
+                inputManager.deleteMapping("SIMPLEAPP_Exit");
 
                 inputManager.addMapping(MOVIMENTO_FRENTE, new KeyTrigger(KeyInput.KEY_W));
                 inputManager.addMapping(MOVIMENTO_TRAS, new KeyTrigger(KeyInput.KEY_S));
@@ -422,6 +506,7 @@ public class Main extends SimpleApplication {
                 inputManager.addMapping(UPGRADE_3, new KeyTrigger(KeyInput.KEY_3));
                 inputManager.addMapping(UPGRADE_4, new KeyTrigger(KeyInput.KEY_4));
                 inputManager.addMapping(UPGRADE_5, new KeyTrigger(KeyInput.KEY_5));
+                inputManager.addMapping(PAUSAR, new KeyTrigger(KeyInput.KEY_ESCAPE));
 
                 inputManager.addListener(
                                 analogListener,
@@ -438,7 +523,8 @@ public class Main extends SimpleApplication {
                                 UPGRADE_2,
                                 UPGRADE_3,
                                 UPGRADE_4,
-                                UPGRADE_5);
+                                UPGRADE_5,
+                                PAUSAR);
         }
 
         // ==========================================================
@@ -495,6 +581,18 @@ public class Main extends SimpleApplication {
                 barraVidaBoss = new BarraVida(assetManager, (cam.getWidth() - 300f) / 2f, 30f);
                 guiNode.attachChild(barraVidaBoss.getNode());
                 barraVidaBoss.getNode().setCullHint(Node.CullHint.Always);
+
+                // RANKING
+                textoRanking = new BitmapText(fonte);
+                textoRanking.setSize(16);
+                textoRanking.setColor(ColorRGBA.White);
+                textoRanking.setLocalTranslation(
+                                cam.getWidth() - 300,
+                                cam.getHeight() - 25,
+                                5);
+                guiNode.attachChild(textoRanking);
+
+                atualizarRankingHUD();
         }
 
         // ==========================================================
@@ -521,6 +619,8 @@ public class Main extends SimpleApplication {
                 TextoEscudo.setText("ESCUDOS: " + player.getEscudos());
 
                 barraVida.atualizar(player.getVida(), player.getVidaMax());
+
+                atualizarRankingHUD();
         }
 
         // ==========================================================
@@ -635,6 +735,18 @@ public class Main extends SimpleApplication {
                 float largura = texto.getLineWidth();
 
                 texto.setLocalTranslation(centroX - largura / 2f, posicaoY, 3);
+        }
+
+        // ==========================================================
+        // Atualizar HUD do Ranking
+        // ==========================================================
+        private void atualizarRankingHUD() {
+                if (textoRanking == null) {
+                        return;
+                }
+
+                textoRanking.setText(
+                                "TOP 5\n" + rankingManager.obterRankingTexto(5));
         }
 
         // ==========================================================
@@ -758,6 +870,28 @@ public class Main extends SimpleApplication {
                 float mouseX = cursor.x;
                 float mouseY = cursor.y;
 
+                // MENU DE PAUSA
+                if (estadoAtual == EstadoJogo.PAUSADO) {
+
+                        if (mouseDentro(mouseX, mouseY, telaPause.getBotaoContinuar())) {
+                                audioManager.tocarClique();
+                                continuarJogo();
+                                return;
+                        }
+
+                        if (mouseDentro(mouseX, mouseY, telaPause.getBotaoReiniciar())) {
+                                audioManager.tocarClique();
+                                reiniciarJogo();
+                                return;
+                        }
+
+                        if (mouseDentro(mouseX, mouseY, telaPause.getBotaoMenu())) {
+                                audioManager.tocarClique();
+                                voltarAoMenu();
+                                return;
+                        }
+                }
+
                 // MENU
                 if (estadoAtual == EstadoJogo.MENU) {
 
@@ -773,6 +907,24 @@ public class Main extends SimpleApplication {
                                 stop();
                                 return;
                         }
+
+                        if (mouseDentro(mouseX, mouseY, menu.getAreaBotaoRanking())) {
+                                audioManager.tocarClique();
+
+                                String textoRanking = rankingManager.obterRankingTexto(
+                                                rankingManager.obterRanking().size());
+
+                                SwingUtilities.invokeLater(() -> {
+                                        JOptionPane.showMessageDialog(
+                                                        null,
+                                                        textoRanking,
+                                                        "ASTRO SURVIVOR - RANKING GERAL",
+                                                        JOptionPane.INFORMATION_MESSAGE);
+                                });
+
+                                return;
+                        }
+
                 }
 
                 // GAME OVER
@@ -840,6 +992,8 @@ public class Main extends SimpleApplication {
         // ==========================================================
 
         private void iniciarJogo() {
+
+                recordeSalvoNaPartida = false;
 
                 estadoAtual = EstadoJogo.JOGANDO;
                 audioManager.iniciarMotorNave();
@@ -990,6 +1144,17 @@ public class Main extends SimpleApplication {
                 }
 
                 projeteisRefletidos.clear();
+        }
+
+        // ==========================================================
+        // CALCULAR INTERVALO ENTRE SPAWNS
+        // ==========================================================
+        private float calcularIntervaloSpawn() {
+                int marcosDeNivel = player.getNivel() / 10;
+
+                float intervalo = intervaloSpawnInicial - (marcosDeNivel * reducaoSpawnPorMarco);
+
+                return Math.max(intervaloSpawnMinimo, intervalo);
         }
 
         // ==========================================================
@@ -1366,6 +1531,9 @@ public class Main extends SimpleApplication {
 
         private void reiniciarJogo() {
 
+                recordeSalvoNaPartida = false;
+                telaPause.esconder();
+
                 score = 0;
                 textoScore.setText("SCORE: " + score);
 
@@ -1407,6 +1575,17 @@ public class Main extends SimpleApplication {
 
         private void voltarAoMenu() {
 
+                if (!recordeSalvoNaPartida) {
+                        rankingManager.registrarResultado(
+                                        nickJogador,
+                                        player.getNivel(),
+                                        score);
+
+                        recordeSalvoNaPartida = true;
+                }
+
+                telaPause.esconder();
+
                 limparInimigos();
                 limparProjeteis();
                 gerenciadorBoss.limpar();
@@ -1437,6 +1616,8 @@ public class Main extends SimpleApplication {
                 System.out.println("VOLTANDO AO MENU...");
 
                 audioManager.iniciarMusicaMenu();
+
+                atualizarRankingHUD();
         }
 
         // ==========================================================
@@ -1561,7 +1742,9 @@ public class Main extends SimpleApplication {
                 // SPAWN CONTÍNUO
                 tempoSpawn += tpf;
 
-                if (tempoSpawn >= intervaloSpawn) {
+                float intervaloSpawnAtual = calcularIntervaloSpawn();
+
+                if (tempoSpawn >= intervaloSpawnAtual) {
                         criarInimigo();
                         tempoSpawn = 0f;
                 }

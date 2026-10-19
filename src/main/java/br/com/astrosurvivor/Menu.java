@@ -56,12 +56,15 @@ public class Menu {
     private final float larguraBotao = 350f;
     private final float alturaBotao = 70f;
 
+    private BitmapText botaoRanking;
+    private Geometry areaBotaoRanking;
+
     // ======================================================
     // POSIÇÃO DOS BOTÕES
     // ======================================================
 
     private final float posicaoJogarY = 330f;
-    private final float posicaoSairY = 250f;
+    private final float posicaoSairY = 170f;
 
     // ======================================================
     // CONSTRUTOR
@@ -183,6 +186,28 @@ public class Menu {
         node.attachChild(
             botaoJogar
         );
+
+        // ==================================================
+        // BOTÃO RANKING
+        // ==================================================
+        float xRanking = (app.getCamera().getWidth() - larguraBotao) / 2f;
+
+        areaBotaoRanking = criarAreaBotao(
+            "AreaBotaoRanking",
+            xRanking,
+            250f
+        );
+
+        node.attachChild(areaBotaoRanking);
+
+        botaoRanking = criarTextoBotao(
+            fonte,
+            "RANKING",
+            xRanking,
+            250f
+        );
+
+        node.attachChild(botaoRanking);
 
         // ==================================================
         // BOTÃO SAIR
@@ -382,6 +407,13 @@ public class Menu {
     public Geometry getAreaBotaoSair() {
 
         return areaBotaoSair;
+    }
+
+    // ==========================================================
+    // RANKING
+    // ==========================================================
+    public Geometry getAreaBotaoRanking() {
+        return areaBotaoRanking;
     }
 
     // ======================================================

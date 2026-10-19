@@ -342,7 +342,7 @@ public class GerenciadorBoss {
                                 boolean podeRefletir = tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE
                                                 || tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE_BLINDADO;
 
-                                if (podeRefletir && Math.random() < 0.5) {
+                                if (podeRefletir && Math.random() < 0.3) {
                                         tiroRefletidoPendente = true;
                                         posicaoTiroRefletidoPendente = bossAtual.getPosicao().clone();
                                 }
@@ -369,7 +369,7 @@ public class GerenciadorBoss {
                                 // Só o meteoro explosivo grande reflete tiros.
                                 if (explosivo.isBoss()
                                                 && tipoBossAtual == TipoBoss.METEORO_EXPLOSIVO
-                                                && Math.random() < 0.5) {
+                                                && Math.random() < 0.3) {
 
                                         tiroRefletidoPendente = true;
                                         posicaoTiroRefletidoPendente = explosivo.getPosicao().clone();
