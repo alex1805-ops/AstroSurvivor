@@ -28,7 +28,7 @@ public class Player {
         // VIDA
         // =========================================
 
-        private int vidaMax = 100;
+        private int vidaMax = 1000000000;
         private int vidaAtual = vidaMax;
 
         // =========================================
@@ -59,9 +59,10 @@ public class Player {
         // 0 = frente
         // 1 = frente + trás
         // 2 = frente + trás + esquerda + direita
+        // 3 = niveis anteriores com 2 tiros para frente
         // =========================================
 
-        private int nivelMultiDisparo = 0;
+        private int nivelMultiDisparo = 3;
 
         // =========================================
         // CONSTRUTOR
@@ -440,7 +441,7 @@ public class Player {
 
         public void aumentarNivelMultiDisparo() {
 
-                if (nivelMultiDisparo < 2) {
+                if (nivelMultiDisparo < 4) {
 
                         nivelMultiDisparo++;
 

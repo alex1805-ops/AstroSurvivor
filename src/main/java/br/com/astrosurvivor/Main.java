@@ -15,6 +15,7 @@ import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
@@ -311,6 +312,7 @@ public class Main extends SimpleApplication {
 
                         case 2:
                                 upgrade = TipoUpgrade.ESCUDO;
+                                break;
 
                         case 3:
                                 upgrade = TipoUpgrade.VELOCIDADE;
@@ -342,7 +344,7 @@ public class Main extends SimpleApplication {
 
                 tempoSpawn = 0f;
 
-                inputManager.setCursorVisible(false);
+                inputManager.setCursorVisible(true);
 
                 System.out.println("UPGRADE ESCOLHIDO!");
                 System.out.println("Voltando ao jogo...");
@@ -1013,7 +1015,7 @@ public class Main extends SimpleApplication {
 
                 criarInimigo();
 
-                inputManager.setCursorVisible(false);
+                inputManager.setCursorVisible(true);
 
                 System.out.println("JOGO INICIADO!");
         }
@@ -1044,29 +1046,115 @@ public class Main extends SimpleApplication {
         // ==========================================================
         // ATIRAR
         // ==========================================================
-        private void atirar() {
 
+        private void atirar() {
                 audioManager.tocarTiro();
 
-                Vector3f posicaoJogador = player.getNode().getWorldTranslation().clone();
+                Vector3f posicao = player.getNode()
+                                .getWorldTranslation().clone();
 
-                int nivelDisparo = player.getNivelMultiDisparo();
+                Quaternion rotacao = player.getNode()
+                                .getWorldRotation();
 
-                // FRENTE
-                criarProjetil(posicaoJogador, Vector3f.UNIT_Z.negate());
+                int nivel = player.getNivelMultiDisparo();
 
-                // NÍVEL 1: FRENTE + TRÁS
-                if (nivelDisparo >= 1) {
-                        criarProjetil(posicaoJogador, Vector3f.UNIT_Z);
+                // Direções relativas à orientação da nave.
+                Vector3f frente = rotacao.mult(
+                                new Vector3f(0, 0, -1)).normalizeLocal();
+
+                Vector3f tras = frente.negate();
+
+                Vector3f direita = rotacao.mult(
+                                new Vector3f(1, 0, 0)).normalizeLocal();
+
+                Vector3f esquerda = direita.negate();
+
+                // Disparo frontal.
+                criarProjetil(posicao.clone(), frente.clone());
+
+                // Nível 1: disparo para trás.
+                if (nivel >= 1) {
+                        criarProjetil(posicao.clone(), tras.clone());
                 }
 
-                // NÍVEL 2: FRENTE + TRÁS + ESQUERDA + DIREITA
-                if (nivelDisparo >= 2) {
-                        criarProjetil(posicaoJogador, Vector3f.UNIT_X.negate());
-                        criarProjetil(posicaoJogador, Vector3f.UNIT_X);
+                // Nível 2: disparos laterais.
+                if (nivel >= 2) {
+                        criarProjetil(posicao.clone(), esquerda.clone());
+                        criarProjetil(posicao.clone(), direita.clone());
                 }
 
-                System.out.println("Player atirou! Nível de disparo: " + nivelDisparo);
+                // Nível 3: segundo disparo frontal, deslocado para a direita.
+                if (nivel >= 3) {
+                        Vector3f posicaoExtra = posicao.add(
+                                        direita.mult(0.5f));
+
+                        criarProjetil(posicaoExtra, frente.clone());
+                }
+
+                // Nível 4: terceiro disparo frontal, deslocado para a esquerda.
+                if (nivel >= 4) {
+                        Vector3f posicaoExtra = posicao.add(
+                                        direita.mult(0.5f));
+
+                        criarProjetil(posicaoExtra, tras.clone());
+                }
+
+                System.out.println("Multi-disparo nível: " + nivel);
+        }
+
+        private Vector3f direcaoLocalParaMundo(Vector3f direcaoLocal) {
+                Vector3f direcao = player.getNode()
+                                .getWorldRotation()
+                                .mult(direcaoLocal);
+
+                // Os tiros permanecem no plano horizontal.
+                direcao.y = 0f;
+
+                return direcao.normalizeLocal();
+        }
+
+        // ==========================================================
+        // MOVIMENTAÇÃO DE TELA COM O MOUSE
+        // ==========================================================
+        private void atualizarOrientacaoNavePeloMouse() {
+                if (!jogadorPodeAgir()) {
+                        return;
+                }
+
+                Vector2f cursor = inputManager.getCursorPosition();
+
+                // Cria um raio da câmera passando pela posição do mouse.
+                Vector3f origemRaio = cam.getWorldCoordinates(cursor, 0f);
+
+                Vector3f fimRaio = cam.getWorldCoordinates(cursor, 1f);
+
+                Vector3f direcaoRaio = fimRaio.subtract(origemRaio).normalizeLocal();
+
+                // Evita divisão por zero.
+                if (Math.abs(direcaoRaio.y) < 0.0001f) {
+                        return;
+                }
+
+                // Encontra onde o raio cruza o plano horizontal Y = 0.
+                float distancia = -origemRaio.y / direcaoRaio.y;
+
+                if (distancia < 0f) {
+                        return;
+                }
+
+                Vector3f alvo = origemRaio.add(
+                                direcaoRaio.mult(distancia));
+
+                Vector3f posicaoNave = player.getNode().getWorldTranslation();
+
+                alvo.y = posicaoNave.y;
+
+                Vector3f diferenca = alvo.subtract(posicaoNave);
+                diferenca.y = 0f;
+
+                if (diferenca.lengthSquared() > 0.0001f) {
+                        player.getNode().lookAt(alvo, Vector3f.UNIT_Y);
+                }
         }
 
         // ==========================================================
@@ -1250,6 +1338,140 @@ public class Main extends SimpleApplication {
         }
 
         // ==========================================================
+        // COLISAO ENTRE ASTEROIDES
+        // ==========================================================
+
+        private void verificarColisoesEntreAsteroides() {
+                List<Inimigo> asteroides = new ArrayList<>(inimigos);
+                List<Inimigo> remover = new ArrayList<>();
+                List<Inimigo> processados = new ArrayList<>();
+
+                List<TipoAsteroide> tiposFragmentos = new ArrayList<>();
+                List<Vector3f> posicoesFragmentos = new ArrayList<>();
+
+                for (int i = 0; i < asteroides.size(); i++) {
+                        Inimigo a = asteroides.get(i);
+
+                        if (remover.contains(a) || processados.contains(a)) {
+                                continue;
+                        }
+
+                        for (int j = i + 1; j < asteroides.size(); j++) {
+                                Inimigo b = asteroides.get(j);
+
+                                if (remover.contains(b) || processados.contains(b)) {
+                                        continue;
+                                }
+
+                                Vector3f posA = a.getPosicao().clone();
+                                Vector3f posB = b.getPosicao().clone();
+
+                                float raioA = obterRaioAsteroide(a.getTipo());
+                                float raioB = obterRaioAsteroide(b.getTipo());
+
+                                float distancia = posA.distance(posB);
+
+                                if (distancia > raioA + raioB) {
+                                        continue;
+                                }
+
+                                processados.add(a);
+                                processados.add(b);
+
+                                if (a.getTipo() == b.getTipo()) {
+                                        refletirAsteroides(a, b, raioA, raioB);
+                                } else {
+                                        remover.add(a);
+                                        remover.add(b);
+
+                                        tiposFragmentos.add(a.getTipo());
+                                        posicoesFragmentos.add(posA);
+
+                                        tiposFragmentos.add(b.getTipo());
+                                        posicoesFragmentos.add(posB);
+                                }
+
+                                break;
+                        }
+                }
+
+                for (Inimigo asteroide : remover) {
+                        rootNode.detachChild(asteroide.getNode());
+                        inimigos.remove(asteroide);
+                }
+
+                for (int i = 0; i < tiposFragmentos.size(); i++) {
+                        criarFragmentos(
+                                        tiposFragmentos.get(i),
+                                        posicoesFragmentos.get(i));
+                }
+        }
+
+        private float obterRaioAsteroide(TipoAsteroide tipo) {
+                switch (tipo) {
+                        case PEQUENO:
+                                return 0.5f;
+                        case MEDIO:
+                                return 1.0f;
+                        case GRANDE:
+                                return 1.8f;
+                        default:
+                                return 0.5f;
+                }
+        }
+
+        // ==========================================================
+        // IREFLETIR ASTEROIDES
+        // ==========================================================
+        private void refletirAsteroides(
+                        Inimigo a,
+                        Inimigo b,
+                        float raioA,
+                        float raioB) {
+
+                Vector3f posA = a.getPosicao().clone();
+                Vector3f posB = b.getPosicao().clone();
+
+                Vector3f normal = posA.subtract(posB);
+
+                if (normal.lengthSquared() < 0.0001f) {
+                        normal.set(Vector3f.UNIT_X);
+                } else {
+                        normal.normalizeLocal();
+                }
+
+                Vector3f vA = a.getDirecao().mult(a.getVelocidade());
+                Vector3f vB = b.getDirecao().mult(b.getVelocidade());
+
+                Vector3f velocidadeRelativa = vA.subtract(vB);
+                float aproximacao = velocidadeRelativa.dot(normal);
+
+                // Só altera a trajetória se estiverem se aproximando.
+                if (aproximacao < 0f) {
+                        Vector3f novaVA = vA.subtract(
+                                        normal.mult(aproximacao));
+
+                        Vector3f novaVB = vB.add(
+                                        normal.mult(aproximacao));
+
+                        a.setDirecao(novaVA);
+                        b.setDirecao(novaVB);
+                }
+
+                // Separa os asteroides para impedir colisões repetidas.
+                float distanciaAtual = posA.distance(posB);
+                float distanciaMinima = raioA + raioB + 0.05f;
+                float sobreposicao = distanciaMinima - distanciaAtual;
+
+                if (sobreposicao > 0f) {
+                        Vector3f separacao = normal.mult(sobreposicao / 2f);
+
+                        a.getNode().move(separacao);
+                        b.getNode().move(separacao.negate());
+                }
+        }
+
+        // ==========================================================
         // INICIAR BOSS
         // ==========================================================
         private void iniciarBoss() {
@@ -1274,7 +1496,7 @@ public class Main extends SimpleApplication {
 
                 gerenciadorBoss.iniciarBoss();
 
-                inputManager.setCursorVisible(false);
+                inputManager.setCursorVisible(true);
         }
 
         // ==========================================================
@@ -1564,7 +1786,7 @@ public class Main extends SimpleApplication {
 
                 criarInimigo();
 
-                inputManager.setCursorVisible(false);
+                inputManager.setCursorVisible(true);
 
                 System.out.println("JOGO REINICIADO!");
         }
@@ -1753,6 +1975,7 @@ public class Main extends SimpleApplication {
                 for (Inimigo inimigo : inimigos) {
                         inimigo.atualizar(tpf);
                 }
+                verificarColisoesEntreAsteroides();
 
                 // ATUALIZAR PROJÉTEIS
                 for (Projetil projetil : projeteis) {
@@ -1783,6 +2006,11 @@ public class Main extends SimpleApplication {
                 // MORTE
                 if (!player.estaVivo()) {
                         jogadorMorreu();
+                }
+
+                // MIRA
+                if (jogadorPodeAgir()) {
+                        atualizarOrientacaoNavePeloMouse();
                 }
         }
 }

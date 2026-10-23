@@ -14,25 +14,24 @@ public class Inimigo {
     private final TipoAsteroide tipo;
 
     private final float velocidade;
-    private final Vector3f direcao;
+    private Vector3f direcao;
 
     private int vida;
 
     public Inimigo(
-        AssetManager assetManager,
-        Vector3f posicaoInicial,
-        Vector3f posicaoAlvo,
-        TipoAsteroide tipo
-    ){
+            AssetManager assetManager,
+            Vector3f posicaoInicial,
+            Vector3f posicaoAlvo,
+            TipoAsteroide tipo) {
         this.tipo = tipo;
 
-        //Configurações de cada tipo
+        // Configurações de cada tipo
         switch (tipo) {
             case PEQUENO:
                 vida = 30;
                 velocidade = 8f;
                 break;
-            
+
             case MEDIO:
                 vida = 60;
                 velocidade = 4f;
@@ -42,7 +41,7 @@ public class Inimigo {
                 vida = 90;
                 velocidade = 1f;
                 break;
-        
+
             default:
                 vida = 30;
                 velocidade = 8f;
@@ -51,14 +50,14 @@ public class Inimigo {
 
         node = new Node("Asteroide_" + tipo);
 
-        //Tamanho dvisual de cada asteroide
+        // Tamanho dvisual de cada asteroide
         float tamanho;
 
         switch (tipo) {
             case PEQUENO:
                 tamanho = 0.5f;
                 break;
-            
+
             case MEDIO:
                 tamanho = 1.0f;
                 break;
@@ -66,7 +65,7 @@ public class Inimigo {
             case GRANDE:
                 tamanho = 1.8f;
                 break;
-        
+
             default:
                 tamanho = 0.5f;
                 break;
@@ -91,39 +90,49 @@ public class Inimigo {
         this.direcao = direcao;
     }
 
-    public void atualizar(float tpf){
+    public void atualizar(float tpf) {
         node.move(direcao.mult(velocidade * tpf));
     }
 
-    public void receberDano(int dano){
+    public void receberDano(int dano) {
         vida -= dano;
 
-        if (vida < 0){
+        if (vida < 0) {
             vida = 0;
         }
     }
 
-    public boolean estaVivo(){
+    public boolean estaVivo() {
         return vida > 0;
     }
 
-    public Node getNode(){
+    public Node getNode() {
         return node;
     }
 
-    public Vector3f getPosicao(){
+    public Vector3f getPosicao() {
         return node.getWorldTranslation();
     }
 
-    public TipoAsteroide getTipo(){
+    public TipoAsteroide getTipo() {
         return tipo;
     }
 
-    public float getVelocidade(){
+    public float getVelocidade() {
         return velocidade;
     }
 
-    public int getVida(){
+    public int getVida() {
         return vida;
+    }
+
+    public Vector3f getDirecao() {
+        return direcao.clone();
+    }
+
+    public void setDirecao(Vector3f novaDirecao) {
+        if (novaDirecao != null && novaDirecao.lengthSquared() > 0.0001f) {
+            direcao = novaDirecao.normalize();
+        }
     }
 }
