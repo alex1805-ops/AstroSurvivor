@@ -28,7 +28,7 @@ public class Player {
         // VIDA
         // =========================================
 
-        private int vidaMax = 1000000000;
+        private int vidaMax = 10000;
         private int vidaAtual = vidaMax;
 
         // =========================================
@@ -50,8 +50,8 @@ public class Player {
         // XP
         // =========================================
 
-        private int nivel = 1;
-        private int xp = 0;
+        private int nivel = 9;
+        private int xp = 450;
 
         // =========================================
         // MULTI-DISPARO
@@ -62,7 +62,7 @@ public class Player {
         // 3 = niveis anteriores com 2 tiros para frente
         // =========================================
 
-        private int nivelMultiDisparo = 3;
+        private int nivelMultiDisparo = 4;
 
         // =========================================
         // CONSTRUTOR
@@ -75,7 +75,7 @@ public class Player {
                 // =========================================
                 // CORPO
                 // =========================================
-
+ 
                 Box formatoCorpo = new Box(
                                 0.7f,
                                 0.3f,

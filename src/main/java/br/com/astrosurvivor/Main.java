@@ -323,14 +323,33 @@ public class Main extends SimpleApplication {
                                 break;
                 }
 
-                if (upgrade == TipoUpgrade.MULTI_DISPARO && player.getNivelMultiDisparo() >= 2) {
+                if (upgrade == TipoUpgrade.MULTI_DISPARO && player.getNivelMultiDisparo() >= 4) {
                         System.out.println("NÍVEL MÁXIMO DE MULTI_DISPARO ATINGIDO!");
+                        return;
                 }
 
                 audioManager.tocarUpgrade();
 
                 aplicarUpgrade(upgrade);
                 finalizarEscolhaUpgrade();
+        }
+
+        private void atualizarBotaoMultiDisparo() {
+                boolean nivelMaximo = player.getNivelMultiDisparo() >= 4;
+
+                if(nivelMaximo) {
+                        botoesUpgrade[4].getMaterial().setColor("Color", ColorRGBA.Gray);
+                        textosUpgrade[4].setText("5 - MULTI-DISPARO (NÍVEL MÁXIMO)");
+                        textosUpgrade[4].setSize(25);
+                        textosUpgrade[4].setColor(ColorRGBA.DarkGray);
+                } else {
+                        botoesUpgrade[4].getMaterial().setColor("Color", ColorRGBA.DarkGray);
+                        textosUpgrade[4].setText("5 - MULTI-DISPARO");
+                        textosUpgrade[4].setSize(25);
+                        textosUpgrade[4].setColor(ColorRGBA.White);
+                }
+
+                centralizarTexto(textosUpgrade[4], cam.getWidth() / 2f, 220f);
         }
 
         // ==========================================================
@@ -788,7 +807,7 @@ public class Main extends SimpleApplication {
                 String[] nomes = {
                                 "1 - VIDA MÁXIMA +20",
                                 "2 - REGENERAÇÃO +30",
-                                "3 - ESCUDO +1",
+                                "3 - ESCUDO +3",
                                 "4 - VELOCIDADE +1",
                                 "5 - MULTI-DISPARO"
                 };
@@ -846,6 +865,7 @@ public class Main extends SimpleApplication {
                 estadoAtual = EstadoJogo.ESCOLHA_UPGRADE;
 
                 upgradeNode.setCullHint(Node.CullHint.Never);
+                atualizarBotaoMultiDisparo();
 
                 player.getNode().setCullHint(Node.CullHint.Never);
 
@@ -1920,6 +1940,11 @@ public class Main extends SimpleApplication {
                 limparProjeteisDistantes();
 
                 atualizarCameraEHud();
+
+                // Atualiza a mira também durante o Boss
+                if(jogadorPodeAgir()){
+                        atualizarOrientacaoNavePeloMouse();
+                }
 
                 if (!player.estaVivo()) {
                         jogadorMorreu();
