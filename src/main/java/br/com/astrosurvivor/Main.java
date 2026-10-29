@@ -323,6 +323,21 @@ public class Main extends SimpleApplication {
                                 break;
                 }
 
+                if (upgrade == TipoUpgrade.VIDA_MAXIMA && player.getNivelVidaMaxima() >= 5) {
+                        System.out.println("VIDA MÁXIMA JÁ ESTÁ NO NÍVEL MÁXIMO!");
+                        return;
+                }
+
+                if (upgrade == TipoUpgrade.ESCUDO && player.getNivelEscudo() >= 4) {
+                        System.out.println("NÍVEL MÁXIMO DE ESCUDOS ATINGIDO!");
+                        return;
+                }
+
+                if (upgrade == TipoUpgrade.VELOCIDADE && player.getNivelVelocidade() >= 5) {
+                        System.out.println("NÍVEL MÁXIMO DE VELOCIDADE ATINGIDO!");
+                        return;
+                }
+
                 if (upgrade == TipoUpgrade.MULTI_DISPARO && player.getNivelMultiDisparo() >= 4) {
                         System.out.println("NÍVEL MÁXIMO DE MULTI_DISPARO ATINGIDO!");
                         return;
@@ -334,10 +349,100 @@ public class Main extends SimpleApplication {
                 finalizarEscolhaUpgrade();
         }
 
+        // ==========================================================
+        // ATUALIZAR OS BOTÕES DE UPGRADE
+        // ==========================================================
+
+        private void atualizarBotaoVidaMaxima() {
+                boolean nivelMaximo = player.getNivelVidaMaxima() >= 5;
+
+                if (nivelMaximo) {
+                        botoesUpgrade[0].getMaterial().setColor("Color", ColorRGBA.Gray);
+                        textosUpgrade[0].setText("1 - VIDA MÁXIMA (NÍVEL MÁXIMO)");
+                        textosUpgrade[0].setSize(25);
+                        textosUpgrade[0].setColor(ColorRGBA.DarkGray);
+                } else {
+                        botoesUpgrade[0].getMaterial().setColor("Color", ColorRGBA.DarkGray);
+                        textosUpgrade[0].setText("1 - VIDA MÁXIMA (NÍVEL " + player.getNivelVidaMaxima() + "/5");
+                        textosUpgrade[0].setSize(25);
+                        textosUpgrade[0].setColor(ColorRGBA.White);
+                }
+
+                centralizarTexto(
+                                textosUpgrade[0],
+                                cam.getWidth() / 2f,
+                                540f);
+        }
+
+        private void atualizarBotaoRegeneracao() {
+                boolean nivelMaximo = player.getNivelRegeneracao() >= 4;
+
+                if (nivelMaximo) {
+                        botoesUpgrade[1].getMaterial().setColor("Color", ColorRGBA.Gray);
+                        textosUpgrade[1].setText("2 - REGENERAÇÃO (NÍVEL MÁXIMO)");
+                        textosUpgrade[1].setSize(25);
+                        textosUpgrade[1].setColor(ColorRGBA.DarkGray);
+                } else {
+                        botoesUpgrade[1].getMaterial().setColor("Color", ColorRGBA.DarkGray);
+                        textosUpgrade[1].setText("2 - REGENERAÇÃO (NÍVEL " + player.getNivelRegeneracao() + "/5");
+                        textosUpgrade[1].setSize(25);
+                        textosUpgrade[1].setColor(ColorRGBA.White);
+                }
+
+                centralizarTexto(
+                                textosUpgrade[1],
+                                cam.getWidth() / 2f,
+                                460f
+                        );
+        }
+
+        private void atualizarBotaoEscudo() {
+                boolean nivelMaximo = player.getNivelEscudo() >= 4;
+
+                if (nivelMaximo) {
+                        botoesUpgrade[2].getMaterial().setColor("Color", ColorRGBA.Gray);
+                        textosUpgrade[2].setText("3 - ESCUDO (NÍVEL MÁXIMO)");
+                        textosUpgrade[2].setSize(25);
+                        textosUpgrade[2].setColor(ColorRGBA.DarkGray);
+                } else {
+                        botoesUpgrade[2].getMaterial().setColor("Color", ColorRGBA.DarkGray);
+                        textosUpgrade[2].setText("3 - ESCUDO (NÍVEL " + player.getNivelEscudo() + "/5");
+                        textosUpgrade[2].setSize(25);
+                        textosUpgrade[2].setColor(ColorRGBA.White);
+                }
+
+                centralizarTexto(
+                                textosUpgrade[2],
+                                cam.getWidth() / 2f,
+                                380f
+                        );
+        }
+
+        private void atualizarBotaoVelocidade() {
+                boolean nivelMaximo = player.getNivelVelocidade() >= 5;
+
+                if (nivelMaximo) {
+                        botoesUpgrade[3].getMaterial().setColor("Color", ColorRGBA.Gray);
+                        textosUpgrade[3].setText("4 - VELOCIDADE (NÍVEL MÁXIMO)");
+                        textosUpgrade[3].setSize(25);
+                        textosUpgrade[3].setColor(ColorRGBA.DarkGray);
+                } else {
+                        botoesUpgrade[3].getMaterial().setColor("Color", ColorRGBA.DarkGray);
+                        textosUpgrade[3].setText("4 - VELOCIDADE (NÍVEL " + player.getNivelVelocidade() + "/5");
+                        textosUpgrade[3].setSize(25);
+                        textosUpgrade[3].setColor(ColorRGBA.White);
+                }
+
+                centralizarTexto(
+                                textosUpgrade[3],
+                                cam.getWidth() / 2f,
+                                300f);
+        }
+
         private void atualizarBotaoMultiDisparo() {
                 boolean nivelMaximo = player.getNivelMultiDisparo() >= 4;
 
-                if(nivelMaximo) {
+                if (nivelMaximo) {
                         botoesUpgrade[4].getMaterial().setColor("Color", ColorRGBA.Gray);
                         textosUpgrade[4].setText("5 - MULTI-DISPARO (NÍVEL MÁXIMO)");
                         textosUpgrade[4].setSize(25);
@@ -349,7 +454,10 @@ public class Main extends SimpleApplication {
                         textosUpgrade[4].setColor(ColorRGBA.White);
                 }
 
-                centralizarTexto(textosUpgrade[4], cam.getWidth() / 2f, 220f);
+                centralizarTexto(
+                                textosUpgrade[4],
+                                cam.getWidth() / 2f,
+                                220f);
         }
 
         // ==========================================================
@@ -865,6 +973,10 @@ public class Main extends SimpleApplication {
                 estadoAtual = EstadoJogo.ESCOLHA_UPGRADE;
 
                 upgradeNode.setCullHint(Node.CullHint.Never);
+                atualizarBotaoVidaMaxima();
+                atualizarBotaoRegeneracao();
+                atualizarBotaoEscudo();
+                atualizarBotaoVelocidade();
                 atualizarBotaoMultiDisparo();
 
                 player.getNode().setCullHint(Node.CullHint.Never);
@@ -1942,7 +2054,7 @@ public class Main extends SimpleApplication {
                 atualizarCameraEHud();
 
                 // Atualiza a mira também durante o Boss
-                if(jogadorPodeAgir()){
+                if (jogadorPodeAgir()) {
                         atualizarOrientacaoNavePeloMouse();
                 }
 

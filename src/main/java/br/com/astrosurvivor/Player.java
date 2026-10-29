@@ -24,12 +24,16 @@ public class Player {
 
         private float velocidade = 5f;
 
+        private int nivelVelocidade = 0;
+
         // =========================================
         // VIDA
         // =========================================
 
-        private int vidaMax = 10000;
+        private int vidaMax = 100;
         private int vidaAtual = vidaMax;
+
+        private int nivelVidaMaxima = 0;
 
         // =========================================
         // REGENERAÇÃO
@@ -50,8 +54,8 @@ public class Player {
         // XP
         // =========================================
 
-        private int nivel = 9;
-        private int xp = 450;
+        private int nivel = 1;
+        private int xp = 0;
 
         // =========================================
         // MULTI-DISPARO
@@ -62,7 +66,7 @@ public class Player {
         // 3 = niveis anteriores com 2 tiros para frente
         // =========================================
 
-        private int nivelMultiDisparo = 4;
+        private int nivelMultiDisparo = 0;
 
         // =========================================
         // CONSTRUTOR
@@ -259,13 +263,9 @@ public class Player {
 
                         escudos--;
 
-                        System.out.println(
-                                        "ESCUDO BLOQUEOU O DANO!");
+                        System.out.println("ESCUDO BLOQUEOU O DANO!");
 
-                        System.out.println(
-                                        "Escudos restantes: "
-                                                        + escudos);
-
+                        System.out.println("Escudos restantes: " + escudos);
                         return;
                 }
 
@@ -275,11 +275,7 @@ public class Player {
                         vidaAtual = 0;
                 }
 
-                System.out.println(
-                                "Vida atual: "
-                                                + vidaAtual
-                                                + "/"
-                                                + vidaMax);
+                System.out.println("Vida atual: " + vidaAtual + "/" + vidaMax);
         }
 
         // =========================================
@@ -300,13 +296,21 @@ public class Player {
         // =========================================
 
         public void aumentarVidaMaxima(int quantidade) {
+                if (nivelVidaMaxima >= 5) {
+                        System.out.println("VIDA MÁXIMA JÁ ESTÁ NO NÍVEL MÁXIMO!");
+                        return;
+                }
+
+                nivelVidaMaxima++;
+
                 vidaMax += quantidade;
 
-                vidaAtual = vidaMax;
+                curar(quantidade);
 
-                System.out.println("Vida máxima aumentada para: " + vidaMax);
+                System.out.println("VIDA MÁXIMA NíVEL " + nivelVidaMaxima);
 
-                System.out.println("VIDA COMPLETAMENTE REGENERADA!");
+                System.out.println("Vida máxima: " + vidaMax);
+                System.out.println("Vida atual: " + vidaAtual);
         }
 
         // =========================================
@@ -330,10 +334,6 @@ public class Player {
                 System.out.println("Regeneração nível " + nivelRegeneracao + " ativada!");
 
                 System.out.println("+30 de vida!");
-        }
-
-        public int getNivelRegeneracao() {
-                return nivelRegeneracao;
         }
 
         public void atualizarRegeneração(float tpf) {
@@ -384,7 +384,7 @@ public class Player {
         // =========================================
 
         public void adicionarEscudo() {
-                if(nivelEscudo >= 3){
+                if(nivelEscudo >= 4){
                         System.out.println("ESCUDO JÁ ESTÁ NO NíVEL MÁXIMO!");
                         return;
                 }
@@ -399,11 +399,15 @@ public class Player {
                                 break;
                         
                         case 2:
-                                escudosGanhos = 6;
+                                escudosGanhos = 3;
                                 break;
                         
                         case 3:
-                                escudosGanhos = 9;
+                                escudosGanhos = 3;
+                                break;
+
+                        case 4:
+                                escudosGanhos = 3;
                                 break;
 
                         default:
@@ -425,14 +429,16 @@ public class Player {
         // VELOCIDADE
         // =========================================
 
-        public void aumentarVelocidade(
-                        float quantidade) {
+        public void aumentarVelocidade(float quantidade) {
+
+                if(nivelVelocidade >= 5) {
+                        System.out.println("VELOCIDADE JÁ ESTÁ NO NÍVEL MÁXIMO!");
+                        return;
+                }
 
                 velocidade += quantidade;
 
-                System.out.println(
-                                "Velocidade: "
-                                                + velocidade);
+                System.out.println("Velocidade: " + velocidade);
         }
 
         // =========================================
@@ -511,6 +517,10 @@ public class Player {
                                 intervalo = 30f;
                                 break;
 
+                        case 4:
+                                intervalo = 15f;
+                                break;
+
                         default:
                                 return;
                 }
@@ -575,16 +585,28 @@ public class Player {
                 return node;
         }
 
-        public void setPosition(
-                        Vector3f position) {
-
-                node.setLocalTranslation(
-                                position);
+        public void setPosition(Vector3f position) {
+                node.setLocalTranslation(position);
         }
 
         public Vector3f getPosition() {
-
                 return node.getLocalTranslation();
+        }
+
+        public int getNivelVidaMaxima() {
+                return nivelVidaMaxima;
+        }
+
+        public int getNivelVelocidade() {
+                return nivelVelocidade;
+        }
+
+        public int getNivelEscudo() {
+                return nivelEscudo;
+        }
+
+        public int getNivelRegeneracao() {
+                return nivelRegeneracao;
         }
 
         // =========================================
@@ -601,6 +623,7 @@ public class Player {
                 // Vida
                 vidaMax = 100;
                 vidaAtual = vidaMax;
+                nivelVidaMaxima = 0;
 
                 // Regeneração
                 nivelRegeneracao = 0;
@@ -617,6 +640,7 @@ public class Player {
 
                 // Velocidade
                 velocidade = 5f;
+                nivelVelocidade = 0;
 
                 // Multi-disparo
                 nivelMultiDisparo = 0;
