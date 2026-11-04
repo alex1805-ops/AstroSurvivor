@@ -71,6 +71,7 @@ public class Main extends SimpleApplication {
         private BitmapText textoNivel;
         private BitmapText textoXP;
         private BitmapText TextoEscudo;
+        private Node miraMouse;
 
         private TelaPause telaPause;
 
@@ -592,12 +593,21 @@ public class Main extends SimpleApplication {
                 cam.setLocation(new Vector3f(0, 8, 12));
                 cam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
 
+                cam.setFrustumPerspective(60f,
+                        (float) cam.getWidth() / cam.getHeight(),
+                        0.1f, 
+                        1000f
+                );
+
                 // FONTE
                 BitmapFont fonte = assetManager.loadFont("Interface/Fonts/Orbitron.fnt");
 
                 criarHUD(fonte);
                 criarGameOver(fonte);
                 criarTelaUpgrade(fonte);
+
+                //MIRA
+                criarMiraMouse();
 
                 // MENU
                 menu = new Menu(this);
@@ -867,7 +877,7 @@ public class Main extends SimpleApplication {
         }
 
         // ==========================================================
-        // Atualizar HUD do Ranking
+        // ATUALIZAR A HUD DO RANKING
         // ==========================================================
         private void atualizarRankingHUD() {
                 if (textoRanking == null) {
@@ -1147,7 +1157,7 @@ public class Main extends SimpleApplication {
 
                 criarInimigo();
 
-                inputManager.setCursorVisible(true);
+                inputManager.setCursorVisible(false);
 
                 System.out.println("JOGO INICIADO!");
         }
@@ -1246,6 +1256,67 @@ public class Main extends SimpleApplication {
         }
 
         // ==========================================================
+        // MIRA
+        // ==========================================================
+        private void criarMiraMouse() {
+                miraMouse = new Node("MiraMouse");
+
+                Material materialMira = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+
+                materialMira.setColor("Color", new ColorRGBA(0.2f, 0.9f, 1f, 1f));
+
+                //Traço superior
+                Geometry superior = new Geometry(
+                        "MiraSuperior",
+                        new Quad(3, 10)
+                );
+                superior.setMaterial(materialMira);
+                superior.setLocalTranslation(-1.5f, 8, 0);
+
+                //Traço inferior
+                Geometry inferior = new Geometry(
+                        "MiraInferior",
+                        new Quad(3, 10)
+                );
+                inferior.setMaterial(materialMira);
+                inferior.setLocalTranslation(-1.5f, -18, 0);
+
+                //Traço esquerdo
+                Geometry esquerdo = new Geometry(
+                        "MiraEsquerda",
+                        new Quad(10, 3)
+                );
+                esquerdo.setMaterial(materialMira);
+                esquerdo.setLocalTranslation(-18f, -1.5f, 0);
+
+                //Traço direito
+                Geometry direito = new Geometry(
+                        "MiraDireita",
+                        new Quad(10, 3)
+                );
+                direito.setMaterial(materialMira);
+                direito.setLocalTranslation(8, -1.5f, 0);
+
+                //Ponto central
+                Geometry centro = new Geometry(
+                        "MiraCentro",
+                        new Quad(3, 3)
+                );
+                centro.setMaterial(materialMira);
+                centro.setLocalTranslation(-1.5f, -1.5f, 0);
+
+                miraMouse.attachChild(superior);
+                miraMouse.attachChild(inferior);
+                miraMouse.attachChild(esquerdo);
+                miraMouse.attachChild(direito);
+                miraMouse.attachChild(centro);
+
+                guiNode.attachChild(miraMouse);
+
+                miraMouse.setCullHint(Node.CullHint.Always);
+        }
+
+        // ==========================================================
         // MOVIMENTAÇÃO DE TELA COM O MOUSE
         // ==========================================================
         private void atualizarOrientacaoNavePeloMouse() {
@@ -1285,7 +1356,10 @@ public class Main extends SimpleApplication {
                 diferenca.y = 0f;
 
                 if (diferenca.lengthSquared() > 0.0001f) {
-                        player.getNode().lookAt(alvo, Vector3f.UNIT_Y);
+
+                        Vector3f alvoInvertido = posicaoNave.subtract(diferenca);
+
+                        player.getNode().lookAt(alvoInvertido, Vector3f.UNIT_Y);
                 }
         }
 
@@ -1628,7 +1702,7 @@ public class Main extends SimpleApplication {
 
                 gerenciadorBoss.iniciarBoss();
 
-                inputManager.setCursorVisible(true);
+                inputManager.setCursorVisible(false);
         }
 
         // ==========================================================
@@ -1918,7 +1992,7 @@ public class Main extends SimpleApplication {
 
                 criarInimigo();
 
-                inputManager.setCursorVisible(true);
+                inputManager.setCursorVisible(false);
 
                 System.out.println("JOGO REINICIADO!");
         }
@@ -2148,6 +2222,21 @@ public class Main extends SimpleApplication {
                 // MIRA
                 if (jogadorPodeAgir()) {
                         atualizarOrientacaoNavePeloMouse();
+                }
+
+                if(miraMouse != null){
+                        Vector2f posicaoMouse = inputManager.getCursorPosition();
+
+                        miraMouse.setLocalTranslation(
+                                posicaoMouse.x,
+                                posicaoMouse.y,
+                                10
+                        );
+
+                        //A Mira só aparece durante o jogo
+                        miraMouse.setCullHint(
+                                jogadorPodeAgir() ? Node.CullHint.Never : Node.CullHint.Always
+                        );
                 }
         }
 }
