@@ -472,7 +472,7 @@ public class Main extends SimpleApplication {
 
                 tempoSpawn = 0f;
 
-                inputManager.setCursorVisible(true);
+                inputManager.setCursorVisible(false);
 
                 System.out.println("UPGRADE ESCOLHIDO!");
                 System.out.println("Voltando ao jogo...");
@@ -1316,6 +1316,34 @@ public class Main extends SimpleApplication {
                 miraMouse.setCullHint(Node.CullHint.Always);
         }
 
+        private void atualizarMiraMouse() {
+                if (miraMouse == null) {
+                        return;
+                }
+
+                boolean mostrarMira = jogadorPodeAgir();
+
+                miraMouse.setCullHint(mostrarMira ? Node.CullHint.Never : Node.CullHint.Always);
+
+                if(!mostrarMira) {
+                        return;
+                }
+
+                Vector2f posicaoMouse = inputManager.getCursorPosition();
+
+                float x = Math.max(
+                        0,
+                        Math.min(posicaoMouse.x, cam.getWidth())
+                );
+
+                float y = Math.max(
+                        0,
+                        Math.min(posicaoMouse.y, cam.getHeight())
+                );
+
+                miraMouse.setLocalTranslation(x, y, 10);
+        }
+
         // ==========================================================
         // MOVIMENTAÇÃO DE TELA COM O MOUSE
         // ==========================================================
@@ -2154,6 +2182,8 @@ public class Main extends SimpleApplication {
 
         @Override
         public void simpleUpdate(float tpf) {
+
+                atualizarMiraMouse();
 
                 if (estadoAtual != EstadoJogo.BOSS) {
                         barraVidaBoss.getNode().setCullHint(Node.CullHint.Always);
