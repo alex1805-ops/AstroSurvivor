@@ -1,22 +1,18 @@
 package br.com.astrosurvivor;
 
 import com.jme3.asset.AssetManager;
-import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.shape.Box;
+import com.jme3.scene.Spatial;
+
+import com.jme3.material.RenderState;
+import com.jme3.scene.Geometry;
 
 public class Player {
 
         private Node node;
 
-        private Geometry corpo;
-        private Geometry cabine;
-        private Geometry asaEsquerda;
-        private Geometry asaDireita;
-        private Geometry cauda;
+        private Spatial nave;
 
         // =========================================
         // MOVIMENTAÇÃO
@@ -76,160 +72,23 @@ public class Player {
 
                 node = new Node("Player");
 
-                // =========================================
-                // CORPO
-                // =========================================
- 
-                Box formatoCorpo = new Box(
-                                0.7f,
-                                0.3f,
-                                1.8f);
+                // Carrega o modelo 3D da nave
+                nave = assetManager.loadModel("Models/AstroSurvivor/astro_survivor_ship.obj");
 
-                corpo = new Geometry(
-                                "Corpo",
-                                formatoCorpo);
+                nave.rotate(0, (float) Math.PI, 0);
+                // Ajusta o tamanho da nave
+                nave.scale(0.8f);
 
-                Material materialCorpo = new Material(
-                                assetManager,
-                                "Common/MatDefs/Misc/Unshaded.j3md");
+                nave.depthFirstTraversal(spatial -> {
+                        if(spatial instanceof Geometry) {
+                                Geometry geometria = (Geometry) spatial;
 
-                materialCorpo.setColor(
-                                "Color",
-                                ColorRGBA.Blue);
+                                geometria.getMaterial().getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Off);
+                        }
+                });
 
-                corpo.setMaterial(materialCorpo);
-
-                node.attachChild(corpo);
-
-                // =========================================
-                // CABINE
-                // =========================================
-
-                Box formatoCabine = new Box(
-                                0.5f,
-                                0.25f,
-                                0.6f);
-
-                cabine = new Geometry(
-                                "Cabine",
-                                formatoCabine);
-
-                Material materialCabine = new Material(
-                                assetManager,
-                                "Common/MatDefs/Misc/Unshaded.j3md");
-
-                materialCabine.setColor(
-                                "Color",
-                                ColorRGBA.Green);
-
-                cabine.setMaterial(materialCabine);
-
-                node.attachChild(cabine);
-
-                // =========================================
-                // ASA ESQUERDA
-                // =========================================
-
-                Box formatoAsaEsquerda = new Box(
-                                0.8f,
-                                0.1f,
-                                0.7f);
-
-                asaEsquerda = new Geometry(
-                                "AsaEsquerda",
-                                formatoAsaEsquerda);
-
-                Material materialAsaEsquerda = new Material(
-                                assetManager,
-                                "Common/MatDefs/Misc/Unshaded.j3md");
-
-                materialAsaEsquerda.setColor(
-                                "Color",
-                                ColorRGBA.Gray);
-
-                asaEsquerda.setMaterial(
-                                materialAsaEsquerda);
-
-                asaEsquerda.setLocalTranslation(
-                                -1.2f,
-                                0,
-                                0);
-
-                asaEsquerda.rotate(
-                                0,
-                                0.3f,
-                                0);
-
-                node.attachChild(
-                                asaEsquerda);
-
-                // =========================================
-                // ASA DIREITA
-                // =========================================
-
-                Box formatoAsaDireita = new Box(
-                                0.8f,
-                                0.1f,
-                                0.7f);
-
-                asaDireita = new Geometry(
-                                "AsaDireita",
-                                formatoAsaDireita);
-
-                Material materialAsaDireita = new Material(
-                                assetManager,
-                                "Common/MatDefs/Misc/Unshaded.j3md");
-
-                materialAsaDireita.setColor(
-                                "Color",
-                                ColorRGBA.White);
-
-                asaDireita.setMaterial(
-                                materialAsaDireita);
-
-                asaDireita.setLocalTranslation(
-                                1.2f,
-                                0,
-                                0);
-
-                asaDireita.rotate(
-                                0,
-                                -0.3f,
-                                0);
-
-                node.attachChild(
-                                asaDireita);
-
-                // =========================================
-                // CAUDA
-                // =========================================
-
-                Box formatoCauda = new Box(
-                                0.4f,
-                                0.5f,
-                                0.4f);
-
-                cauda = new Geometry(
-                                "Cauda",
-                                formatoCauda);
-
-                Material materialCauda = new Material(
-                                assetManager,
-                                "Common/MatDefs/Misc/Unshaded.j3md");
-
-                materialCauda.setColor(
-                                "Color",
-                                ColorRGBA.Red);
-
-                cauda.setMaterial(
-                                materialCauda);
-
-                cauda.setLocalTranslation(
-                                0,
-                                0.5f,
-                                1.2f);
-
-                node.attachChild(cauda);
+                //adiciona a nave ao jogador
+                node.attachChild(nave);
         }
 
         // =========================================

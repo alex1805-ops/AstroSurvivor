@@ -24,6 +24,8 @@ import com.jme3.scene.shape.Quad;
 import com.jme3.system.AppSettings;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import com.jme3.light.AmbientLight;
+import com.jme3.light.DirectionalLight;
 
 public class Main extends SimpleApplication {
 
@@ -576,6 +578,15 @@ public class Main extends SimpleApplication {
                 flyCam.setEnabled(false);
 
                 configurarControles();
+
+                AmbientLight luzAmbiente = new AmbientLight();
+                luzAmbiente.setColor(ColorRGBA.White.mult(0.7f));
+                rootNode.addLight(luzAmbiente);
+
+                DirectionalLight luzDirecional = new DirectionalLight();
+                luzDirecional.setDirection(new Vector3f(-1, -2, -3).normalizeLocal());
+                luzDirecional.setColor(ColorRGBA.White);
+                rootNode.addLight(luzDirecional);
 
                 // PLAYER
                 player = new Player(assetManager);
