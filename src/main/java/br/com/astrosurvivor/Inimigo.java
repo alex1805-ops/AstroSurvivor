@@ -32,21 +32,21 @@ public class Inimigo {
             case PEQUENO:
                 vida = 30;
                 velocidade = 8f;
-                tamanho = 0.5f;
+                tamanho = 1.0f;
                 caminhoModelo = "Models/Asteroides/asteroide_pequeno.obj";
                 break;
 
             case MEDIO:
                 vida = 60;
                 velocidade = 4f;
-                tamanho = 1.0f;
+                tamanho = 2.0f;
                 caminhoModelo = "Models/Asteroides/asteroide_medio.obj";
                 break;
 
             case GRANDE:
                 vida = 90;
                 velocidade = 1f;
-                tamanho = 1.8f;
+                tamanho = 2.5f;
                 caminhoModelo = "Models/Asteroides/asteroide_grande.obj";
                 break;
 
