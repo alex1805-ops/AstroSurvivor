@@ -1,16 +1,14 @@
+
 package br.com.astrosurvivor;
 
 import com.jme3.asset.AssetManager;
-import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.shape.Box;
+import com.jme3.scene.Spatial;
 
 public class Inimigo {
-    private final Node node;
 
+    private final Node node;
     private final TipoAsteroide tipo;
 
     private final float velocidade;
@@ -23,71 +21,52 @@ public class Inimigo {
             Vector3f posicaoInicial,
             Vector3f posicaoAlvo,
             TipoAsteroide tipo) {
+
         this.tipo = tipo;
 
-        // Configurações de cada tipo
+        String caminhoModelo;
+        float tamanho;
+
         switch (tipo) {
+
             case PEQUENO:
                 vida = 30;
                 velocidade = 8f;
+                tamanho = 0.5f;
+                caminhoModelo = "Models/Asteroides/asteroide_pequeno.obj";
                 break;
 
             case MEDIO:
                 vida = 60;
                 velocidade = 4f;
+                tamanho = 1.0f;
+                caminhoModelo = "Models/Asteroides/asteroide_medio.obj";
                 break;
 
             case GRANDE:
                 vida = 90;
                 velocidade = 1f;
+                tamanho = 1.8f;
+                caminhoModelo = "Models/Asteroides/asteroide_grande.obj";
                 break;
 
             default:
-                vida = 30;
-                velocidade = 8f;
-                break;
+                throw new IllegalArgumentException("Tipo de asteroide inválido: " + tipo);
         }
 
         node = new Node("Asteroide_" + tipo);
 
-        // Tamanho dvisual de cada asteroide
-        float tamanho;
+        // Carrega o modelo 3D correspondente.
+        Spatial modelo = assetManager.loadModel(caminhoModelo);
 
-        switch (tipo) {
-            case PEQUENO:
-                tamanho = 0.5f;
-                break;
+        modelo.setLocalScale(tamanho);
 
-            case MEDIO:
-                tamanho = 1.0f;
-                break;
-
-            case GRANDE:
-                tamanho = 1.8f;
-                break;
-
-            default:
-                tamanho = 0.5f;
-                break;
-        }
-
-        Box forma = new Box(tamanho, tamanho, tamanho);
-
-        Geometry corpo = new Geometry("CorpoAsteroide_" + tipo, forma);
-
-        Material material = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-
-        material.setColor("Color", ColorRGBA.Gray);
-
-        corpo.setMaterial(material);
-
-        node.attachChild(corpo);
+        node.attachChild(modelo);
 
         node.setLocalTranslation(posicaoInicial);
 
-        Vector3f direcao = posicaoAlvo.subtract(posicaoInicial).normalize();
-
-        this.direcao = direcao;
+        // Define a direção até o alvo.
+        this.direcao = posicaoAlvo.subtract(posicaoInicial).normalize();
     }
 
     public void atualizar(float tpf) {
