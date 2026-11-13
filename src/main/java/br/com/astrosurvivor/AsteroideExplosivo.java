@@ -1,12 +1,9 @@
 package br.com.astrosurvivor;
 
 import com.jme3.asset.AssetManager;
-import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.shape.Box;
+import com.jme3.scene.Spatial;
 
 public class AsteroideExplosivo {
     private final Node node;
@@ -24,11 +21,10 @@ public class AsteroideExplosivo {
     private final int danoExplosao;
 
     public AsteroideExplosivo(
-        AssetManager assetManager,
-        Vector3f posicaoInicial,
-        Vector3f alvo,
-        boolean boss
-    ) {
+            AssetManager assetManager,
+            Vector3f posicaoInicial,
+            Vector3f alvo,
+            boolean boss) {
         this.boss = boss;
 
         if (boss) {
@@ -45,25 +41,34 @@ public class AsteroideExplosivo {
         }
 
         node = new Node(boss ? "ExplosivoBoss" : "ExplosivoPequeno");
+        // ======================================================
+        // MODELOS 3D DOS ASTEROIDES EXPLOSIVOS
+        // ======================================================
 
         float tamanho = boss ? 3.5f : 0.5f;
 
-        Box forma = new Box(tamanho, tamanho, tamanho);
+        String caminhoModelo;
 
-        Geometry corpo = new Geometry("Explosivo", forma);
+        if (boss) {
 
-        Material material = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            caminhoModelo = "Models/Bosses/asteroide_explosivo_gigante.obj";
 
-        material.setColor("Color", boss ? ColorRGBA.Red : ColorRGBA.Orange);
+        } else {
 
-        corpo.setMaterial(material);
+            caminhoModelo = "Models/Bosses/asteroide_explosivo_pequeno.obj";
+        }
 
-        node.attachChild(corpo);
+        Spatial modelo = assetManager.loadModel(caminhoModelo);
+
+        modelo.setLocalScale(tamanho);
+
+        node.attachChild(modelo);
 
         node.setLocalTranslation(posicaoInicial);
 
         direcao = alvo.subtract(posicaoInicial).normalize();
     }
+
     // ======================================================
     // UPDATE
     // ======================================================

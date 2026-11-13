@@ -1,12 +1,10 @@
 package br.com.astrosurvivor;
 
 import com.jme3.asset.AssetManager;
-import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.shape.Box;
+import com.jme3.scene.Spatial;
 
 public class Boss {
     private final Node node;
@@ -21,11 +19,10 @@ public class Boss {
     private Vector3f direcao;
 
     public Boss(
-        AssetManager assetManager,
-        Vector3f posicaoInicial,
-        Vector3f alvo,
-        TipoBoss tipo
-    ) {
+            AssetManager assetManager,
+            Vector3f posicaoInicial,
+            Vector3f alvo,
+            TipoBoss tipo) {
         this.tipo = tipo;
 
         // ======================================================
@@ -118,27 +115,46 @@ public class Boss {
                 break;
         }
 
-        Box forma = new Box(tamanho, tamanho, tamanho);
+        // ======================================================
+        // MODELOS 3D DOS BOSSES
+        // ======================================================
 
-        Geometry corpo = new Geometry("CorpoBoss", forma);
+        String caminhoModelo = null;
 
-        Material material = new Material(
-            assetManager,
-            "Common/MatDefs/Misc/Unshaded.j3md"
-        );
+        switch (tipo) {
 
-        material.setColor("Color", cor);
+            case ASTEROIDE_GIGANTE:
+                caminhoModelo = "Models/Bosses/asteroide_gigante.obj";
+                break;
 
-        corpo.setMaterial(material);
+            case ASTEROIDE_GIGANTE_BLINDADO:
+                caminhoModelo = "Models/Bosses/asteroide_blindado.obj";
+                break;
 
-        node.attachChild(corpo);
+            case METEORO_EXPLOSIVO:
+                caminhoModelo = "Models/Bosses/asteroide_explosivo_gigante.obj";
+                break;
+            
+            case HORDA:
+                caminhoModelo = "Models/Asteroides/asteroide_pequeno.obj";
+                break;
+        }
+
+        if (caminhoModelo != null) {
+
+            Spatial modelo = assetManager.loadModel(caminhoModelo);
+
+            modelo.setLocalScale(tamanho);
+
+            node.attachChild(modelo);
+        }
 
         node.setLocalTranslation(posicaoInicial);
 
         // ======================================================
         // DIREÇÃO
         // ======================================================
-        if(alvo != null) {
+        if (alvo != null) {
             direcao = alvo.subtract(posicaoInicial).normalize();
         } else {
             direcao = Vector3f.ZERO.clone();
@@ -149,7 +165,7 @@ public class Boss {
     // UPDATE
     // ======================================================
     public void atualizar(float tpf) {
-        if ( velocidade <= 0f) {
+        if (velocidade <= 0f) {
             return;
         }
 
