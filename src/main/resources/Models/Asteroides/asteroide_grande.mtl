@@ -1,5 +1,8 @@
 newmtl Rock
-Ka 0.10 0.095 0.085
-Kd 0.34 0.31 0.27
-Ks 0.18 0.17 0.15
-Ns 18
+Ka 0.28 0.28 0.30
+Kd 1.00 1.00 1.00
+Ks 0.22 0.22 0.24
+Ns 28
+d 1.0
+illum 2
+map_Kd asteroide_grande_textura.png

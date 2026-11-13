@@ -1,0 +1,8 @@
+newmtl Rock
+Ka 0.28 0.28 0.30
+Kd 1.00 1.00 1.00
+Ks 0.22 0.22 0.24
+Ns 28
+d 1.0
+illum 2
+map_Kd asteroide_explosivo_pequeno_textura.png
