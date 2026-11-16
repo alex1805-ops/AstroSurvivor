@@ -21,10 +21,12 @@ public class AsteroideExplosivo {
     private final int danoExplosao;
 
     public AsteroideExplosivo(
-            AssetManager assetManager,
-            Vector3f posicaoInicial,
-            Vector3f alvo,
-            boolean boss) {
+        AssetManager assetManager,
+        Vector3f posicaoInicial,
+        Vector3f alvo,
+        boolean boss
+    ) {
+
         this.boss = boss;
 
         if (boss) {
@@ -41,6 +43,7 @@ public class AsteroideExplosivo {
         }
 
         node = new Node(boss ? "ExplosivoBoss" : "ExplosivoPequeno");
+
         // ======================================================
         // MODELOS 3D DOS ASTEROIDES EXPLOSIVOS
         // ======================================================
@@ -48,25 +51,27 @@ public class AsteroideExplosivo {
         float tamanho = boss ? 3.5f : 0.5f;
 
         String caminhoModelo;
+        String caminhoTextura;
 
         if (boss) {
-
-            caminhoModelo = "Models/Bosses/asteroide_explosivo_gigante.obj";
-
+            caminhoModelo = "Models/Asteroides/asteroide_grande.obj";
+            caminhoTextura = "Models/Bosses/asteroide_explosivo_gigante_textura.png";
         } else {
-
-            caminhoModelo = "Models/Bosses/asteroide_explosivo_pequeno.obj";
+            caminhoModelo = "Models/Asteroides/asteroide_pequeno.obj";
+            caminhoTextura = "Models/Bosses/asteroide_explosivo_pequeno_textura.png";
         }
 
         Spatial modelo = assetManager.loadModel(caminhoModelo);
 
         modelo.setLocalScale(tamanho);
 
+        ModeloAsteroide.aplicarTextura(assetManager, modelo, caminhoTextura);
+
         node.attachChild(modelo);
 
         node.setLocalTranslation(posicaoInicial);
 
-        direcao = alvo.subtract(posicaoInicial).normalize();
+        this.direcao = alvo.subtract(posicaoInicial).normalize();
     }
 
     // ======================================================
