@@ -1631,7 +1631,7 @@ public class Main extends SimpleApplication {
                 avisoLimbo.setSize(34);
                 avisoLimbo.setColor(ColorRGBA.Red);
 
-                avisoLimbo.setText("VOCÊ ENTROU NO LIMBO!\nRETORNE IMEDIATAMENTE!");
+                avisoLimbo.setText("!!!WARNING!!!\nVOCÊ ENTROU NO LIMBO!\nRETORNE IMEDIATAMENTE!");
 
                 avisoLimbo.setLocalTranslation(0, cam.getHeight() - 100, 5);
 
