@@ -59,6 +59,7 @@ public class Boss {
         // NODE
         // ======================================================
         node = new Node("Boss_" + tipo);
+        node.setLocalTranslation(posicaoInicial);
 
         // ======================================================
         // TAMANHO

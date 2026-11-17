@@ -1633,7 +1633,11 @@ public class Main extends SimpleApplication {
 
                 avisoLimbo.setText("!!!WARNING!!!\nVOCÊ ENTROU NO LIMBO!\nRETORNE IMEDIATAMENTE!");
 
-                avisoLimbo.setLocalTranslation(0, cam.getHeight() - 100, 5);
+                avisoLimbo.setLocalTranslation(
+                        cam.getWidth() / 2 - avisoLimbo.getLineWidth() / 2f,
+                        125f,
+                        5f
+                );
 
                 avisoLimbo.setCullHint(Node.CullHint.Always);
 
