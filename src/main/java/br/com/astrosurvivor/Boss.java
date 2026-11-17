@@ -71,7 +71,7 @@ public class Boss {
                 break;
 
             case ASTEROIDE_GIGANTE_BLINDADO:
-                tamanho = 8f;
+                tamanho = 6f;
                 break;
 
             case METEORO_EXPLOSIVO:

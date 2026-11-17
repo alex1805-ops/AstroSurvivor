@@ -1,3 +1,8 @@
+// ==========================================================
+// ASTRO SURVIVOR - COMANDO DE INICIALIZAÇÃO DO JOGO
+// .\mvnw.cmd clean compile exec:java
+// ==========================================================
+
 package br.com.astrosurvivor;
 
 import java.util.ArrayList;
@@ -86,6 +91,39 @@ public class Main extends SimpleApplication {
         private EstadoJogo estadoAntesPause = EstadoJogo.JOGANDO;
 
         private static final String PAUSAR = "Pausar";
+
+        // ==========================================================
+        // LIMBO
+        // ==========================================================
+        private BitmapText avisoLimbo;
+
+        private static final float LIMITE_MAPA = 200f;
+
+        private boolean jogadorNoLimbo = false;
+
+        private float tempoDanoLimbo = 0f;
+        private float tempoPiscarLimbo = 0f;
+
+        private boolean avisoVisivel = true;
+
+        private static final float INTERVALO_DANO_LIMBO = 10f;
+
+        // ==========================================================
+        // RESETAR LIMBO
+        // ==========================================================
+        private void resetarLimbo() {
+
+                jogadorNoLimbo = false;
+
+                tempoDanoLimbo = 0f;
+                tempoPiscarLimbo = 0f;
+
+                avisoVisivel = true;
+
+                avisoLimbo.setCullHint(Node.CullHint.Always);
+
+                starField.getNode().setCullHint(Node.CullHint.Never);
+        }
 
         // ==========================================================
         // MENU
@@ -616,6 +654,7 @@ public class Main extends SimpleApplication {
                 criarHUD(fonte);
                 criarGameOver(fonte);
                 criarTelaUpgrade(fonte);
+                criarAvisoLimbo(fonte);
 
                 //MIRA
                 criarMiraMouse();
@@ -1118,8 +1157,6 @@ public class Main extends SimpleApplication {
 
         // ==========================================================
         // CLIQUE EM GEOMETRIA
-        // CORRIGIDO: usa o tamanho real do Quad (antes era sempre 350x70,
-        // o que quebrava os botões de upgrade, que são 600x60)
         // ==========================================================
 
         private boolean mouseDentro(float mouseX, float mouseY, Geometry botao) {
@@ -1152,6 +1189,8 @@ public class Main extends SimpleApplication {
 
                 estadoAtual = EstadoJogo.JOGANDO;
                 audioManager.iniciarMotorNave();
+
+                resetarLimbo();
 
                 tempoSpawn = 0f;
 
@@ -1583,6 +1622,119 @@ public class Main extends SimpleApplication {
         }
 
         // ==========================================================
+        // AVISO DO LIMBO
+        // ==========================================================
+
+        private void criarAvisoLimbo(BitmapFont fonte) {
+                avisoLimbo = new BitmapText(fonte);
+
+                avisoLimbo.setSize(34);
+                avisoLimbo.setColor(ColorRGBA.Red);
+
+                avisoLimbo.setText("VOCÊ ENTROU NO LIMBO!\nRETORNE IMEDIATAMENTE!");
+
+                avisoLimbo.setLocalTranslation(0, cam.getHeight() - 100, 5);
+
+                avisoLimbo.setCullHint(Node.CullHint.Always);
+
+                guiNode.attachChild(avisoLimbo);
+        }
+
+        // ==========================================================
+        // LIMBO
+        // ==========================================================
+
+        private void atualizarLimbo(float tpf) {
+                Vector3f posicao = player.getPosition();
+
+                // Distancia horizontal em relação ao centro do mapa.
+                float distancia = (float) Math.sqrt(
+                        posicao.x * posicao.x +
+                        posicao.z *posicao.z
+                );
+
+                boolean estaNoLimbo = distancia > LIMITE_MAPA;
+
+                // ==================================================
+                // ENTROU NO LIMBO
+                // ==================================================
+
+                if (estaNoLimbo && !jogadorNoLimbo) {
+                        jogadorNoLimbo = true;
+
+                        tempoDanoLimbo = 0f;
+                        tempoPiscarLimbo = 0f;
+
+                        avisoVisivel = true;
+
+                        System.out.println("JOGADOR ENTROU NO LIMBO!");
+                }
+
+                // ==================================================
+                // SAIU DO LIMBO
+                // ==================================================
+
+                if (!estaNoLimbo && jogadorNoLimbo) {
+                        jogadorNoLimbo = false;
+
+                        tempoDanoLimbo = 0f;
+                        tempoPiscarLimbo = 0f;
+
+                        avisoLimbo.setCullHint(Node.CullHint.Always);
+
+                        starField.getNode().setCullHint(Node.CullHint.Never);
+
+                        System.out.println("O JOGADOR RETORNOU AO ESPAÇO SEGURO!");
+
+                        return;
+                }
+
+                // ==================================================
+                // JOGADOR DENTRO DO LIMBO
+                // ==================================================
+
+                if (jogadorNoLimbo) {
+
+                        // Remove todas as estrelas da visualização.
+                        starField.getNode().setCullHint(Node.CullHint.Always);
+
+                        // Atualiza o aviso piscante.
+                        tempoPiscarLimbo += tpf;
+
+                        if (tempoPiscarLimbo >= 0.4f) {
+
+                                avisoVisivel = !avisoVisivel;
+
+                                tempoPiscarLimbo = 0f;
+
+                                avisoLimbo.setCullHint(avisoVisivel ? Node.CullHint.Never : Node.CullHint.Always);
+
+                                tempoPiscarLimbo = 0f;
+                        }
+
+                        // Contabiliza o tempo para aplicar dano ao jogador.
+                        tempoDanoLimbo += tpf;
+
+                        if (tempoDanoLimbo >= INTERVALO_DANO_LIMBO) {
+
+                                // Distância além do limite seguro.
+                                float distanciaExtra = distancia - LIMITE_MAPA;
+
+                                // Aumenta o dano conforme a distância.
+                                int dano = 10 + (int) (distanciaExtra /10f) * 5;
+
+                                player.receberDano(dano);
+
+                                tempoDanoLimbo = 0f;
+
+                                System.out.println("LIMBO! DANO RECEBIDO: " + dano);
+
+                                System.out.println("DISTÂNCIA ALÉM DO LIMITE: " + distanciaExtra);
+                        }
+                }
+        }
+
+        // ==========================================================
         // COLISAO ENTRE ASTEROIDES
         // ==========================================================
 
@@ -2007,6 +2159,7 @@ public class Main extends SimpleApplication {
                 limparInimigos();
                 limparProjeteis();
                 gerenciadorBoss.limpar();
+                resetarLimbo();
 
                 barraVidaBoss.getNode().setCullHint(Node.CullHint.Always);
 
@@ -2204,12 +2357,23 @@ public class Main extends SimpleApplication {
 
                 gerenciadorBoss.atualizarOndasChoque(tpf);
 
-                if (estadoAtual == EstadoJogo.BOSS) {
-                        atualizarBoss(tpf);
+                // Só executa o Limbo durante a partida
+                if (estadoAtual != EstadoJogo.JOGANDO && estadoAtual != EstadoJogo.BOSS) {
                         return;
                 }
 
-                if (estadoAtual != EstadoJogo.JOGANDO) {
+                // Atualiza o sistema do Limbo.
+                atualizarLimbo(tpf);
+
+                // Verifica se o dano do limbo matou o jogador
+                if (!player.estaVivo()) {
+                        jogadorMorreu();
+                        return;
+                }
+
+                // Atualiza o boss normalmente
+                if (estadoAtual == EstadoJogo.BOSS) {
+                        atualizarBoss(tpf);
                         return;
                 }
 
