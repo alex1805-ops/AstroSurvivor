@@ -95,7 +95,7 @@ public class Main extends SimpleApplication {
         // ==========================================================
         // LIMBO
         // ==========================================================
-        private BitmapText avisoLimbo;
+        private Node avisoLimbo;
 
         private static final float LIMITE_MAPA = 200f;
 
@@ -198,6 +198,11 @@ public class Main extends SimpleApplication {
         private static final String UPGRADE_4 = "Upgrade4";
         private static final String UPGRADE_5 = "Upgrade5";
 
+        private static final String TESTE_BOSS_1 = "TesteBoss1";
+        private static final String TESTE_BOSS_2 = "TesteBoss2";
+        private static final String TESTE_BOSS_3 = "TesteBoss3";
+        private static final String TESTE_BOSS_4 = "TesteBoss4";
+
         // ==========================================================
         // AUXILIAR: o jogador pode agir (andar/atirar)?
         // ==========================================================
@@ -244,6 +249,44 @@ public class Main extends SimpleApplication {
                 public void onAction(String name, boolean isPressed, float tpf) {
 
                         if (!isPressed) {
+                                return;
+                        }
+
+                        // =========================================
+                        // TESTE MANUAL DE BOSSES
+                        // =========================================
+
+                        if (name.equals(TESTE_BOSS_1)
+                                        || name.equals(TESTE_BOSS_2)
+                                        || name.equals(TESTE_BOSS_3)
+                                        || name.equals(TESTE_BOSS_4)) {
+
+                                if (estadoAtual == EstadoJogo.JOGANDO || estadoAtual == EstadoJogo.BOSS) {
+
+                                        TipoBoss tipoEscolhido = null;
+
+                                        switch (name) {
+                                                case TESTE_BOSS_1:
+                                                        tipoEscolhido = TipoBoss.ASTEROIDE_GIGANTE;
+                                                        break;
+
+                                                case TESTE_BOSS_2:
+                                                        tipoEscolhido = TipoBoss.ASTEROIDE_GIGANTE_BLINDADO;
+                                                        break;
+
+                                                case TESTE_BOSS_3:
+                                                        tipoEscolhido = TipoBoss.METEORO_EXPLOSIVO;
+                                                        break;
+
+                                                case TESTE_BOSS_4:
+                                                        tipoEscolhido = TipoBoss.HORDA;
+                                                        break;
+                                        }
+
+                                        if (tipoEscolhido != null) {
+                                                iniciarBoss(tipoEscolhido);
+                                        }
+                                }
                                 return;
                         }
 
@@ -433,8 +476,7 @@ public class Main extends SimpleApplication {
                 centralizarTexto(
                                 textosUpgrade[1],
                                 cam.getWidth() / 2f,
-                                460f
-                        );
+                                460f);
         }
 
         private void atualizarBotaoEscudo() {
@@ -455,8 +497,7 @@ public class Main extends SimpleApplication {
                 centralizarTexto(
                                 textosUpgrade[2],
                                 cam.getWidth() / 2f,
-                                380f
-                        );
+                                380f);
         }
 
         private void atualizarBotaoVelocidade() {
@@ -643,10 +684,9 @@ public class Main extends SimpleApplication {
                 cam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
 
                 cam.setFrustumPerspective(60f,
-                        (float) cam.getWidth() / cam.getHeight(),
-                        0.1f, 
-                        1000f
-                );
+                                (float) cam.getWidth() / cam.getHeight(),
+                                0.1f,
+                                1000f);
 
                 // FONTE
                 BitmapFont fonte = assetManager.loadFont("Interface/Fonts/Orbitron.fnt");
@@ -656,7 +696,7 @@ public class Main extends SimpleApplication {
                 criarTelaUpgrade(fonte);
                 criarAvisoLimbo(fonte);
 
-                //MIRA
+                // MIRA
                 criarMiraMouse();
 
                 // MENU
@@ -697,6 +737,11 @@ public class Main extends SimpleApplication {
                 inputManager.addMapping(UPGRADE_5, new KeyTrigger(KeyInput.KEY_5));
                 inputManager.addMapping(PAUSAR, new KeyTrigger(KeyInput.KEY_ESCAPE));
 
+                inputManager.addMapping(TESTE_BOSS_1, new KeyTrigger(KeyInput.KEY_F1));
+                inputManager.addMapping(TESTE_BOSS_2, new KeyTrigger(KeyInput.KEY_F2));
+                inputManager.addMapping(TESTE_BOSS_3, new KeyTrigger(KeyInput.KEY_F3));
+                inputManager.addMapping(TESTE_BOSS_4, new KeyTrigger(KeyInput.KEY_F4));
+
                 inputManager.addListener(
                                 analogListener,
                                 MOVIMENTO_FRENTE,
@@ -713,7 +758,11 @@ public class Main extends SimpleApplication {
                                 UPGRADE_3,
                                 UPGRADE_4,
                                 UPGRADE_5,
-                                PAUSAR);
+                                PAUSAR,
+                                TESTE_BOSS_1,
+                                TESTE_BOSS_2,
+                                TESTE_BOSS_3,
+                                TESTE_BOSS_4);
         }
 
         // ==========================================================
@@ -1315,43 +1364,38 @@ public class Main extends SimpleApplication {
 
                 materialMira.setColor("Color", new ColorRGBA(0.2f, 0.9f, 1f, 1f));
 
-                //Traço superior
+                // Traço superior
                 Geometry superior = new Geometry(
-                        "MiraSuperior",
-                        new Quad(3, 10)
-                );
+                                "MiraSuperior",
+                                new Quad(3, 10));
                 superior.setMaterial(materialMira);
                 superior.setLocalTranslation(-1.5f, 8, 0);
 
-                //Traço inferior
+                // Traço inferior
                 Geometry inferior = new Geometry(
-                        "MiraInferior",
-                        new Quad(3, 10)
-                );
+                                "MiraInferior",
+                                new Quad(3, 10));
                 inferior.setMaterial(materialMira);
                 inferior.setLocalTranslation(-1.5f, -18, 0);
 
-                //Traço esquerdo
+                // Traço esquerdo
                 Geometry esquerdo = new Geometry(
-                        "MiraEsquerda",
-                        new Quad(10, 3)
-                );
+                                "MiraEsquerda",
+                                new Quad(10, 3));
                 esquerdo.setMaterial(materialMira);
                 esquerdo.setLocalTranslation(-18f, -1.5f, 0);
 
-                //Traço direito
+                // Traço direito
                 Geometry direito = new Geometry(
-                        "MiraDireita",
-                        new Quad(10, 3)
-                );
+                                "MiraDireita",
+                                new Quad(10, 3));
                 direito.setMaterial(materialMira);
                 direito.setLocalTranslation(8, -1.5f, 0);
 
-                //Ponto central
+                // Ponto central
                 Geometry centro = new Geometry(
-                        "MiraCentro",
-                        new Quad(3, 3)
-                );
+                                "MiraCentro",
+                                new Quad(3, 3));
                 centro.setMaterial(materialMira);
                 centro.setLocalTranslation(-1.5f, -1.5f, 0);
 
@@ -1367,6 +1411,7 @@ public class Main extends SimpleApplication {
         }
 
         private void atualizarMiraMouse() {
+
                 if (miraMouse == null) {
                         return;
                 }
@@ -1375,21 +1420,18 @@ public class Main extends SimpleApplication {
 
                 miraMouse.setCullHint(mostrarMira ? Node.CullHint.Never : Node.CullHint.Always);
 
-                if(!mostrarMira) {
+                if (!mostrarMira) {
                         return;
                 }
 
                 Vector2f posicaoMouse = inputManager.getCursorPosition();
 
-                float x = Math.max(
-                        0,
-                        Math.min(posicaoMouse.x, cam.getWidth())
-                );
+                // Margem para manter a mira inteira dentro da tela.
+                float margem = 20f;
 
-                float y = Math.max(
-                        0,
-                        Math.min(posicaoMouse.y, cam.getHeight())
-                );
+                float x = Math.max(margem, Math.min(posicaoMouse.x, cam.getWidth() - margem));
+
+                float y = Math.max(margem, Math.min(posicaoMouse.y, cam.getHeight() - margem));
 
                 miraMouse.setLocalTranslation(x, y, 10);
         }
@@ -1626,19 +1668,50 @@ public class Main extends SimpleApplication {
         // ==========================================================
 
         private void criarAvisoLimbo(BitmapFont fonte) {
-                avisoLimbo = new BitmapText(fonte);
 
-                avisoLimbo.setSize(34);
-                avisoLimbo.setColor(ColorRGBA.Red);
+                // Nó principal que controla as três linhas juntas
+                avisoLimbo = new Node("AvisoLimbo");
 
-                avisoLimbo.setText("!!!WARNING!!!\nVOCÊ ENTROU NO LIMBO!\nRETORNE IMEDIATAMENTE!");
+                float tamanho = 34f;
 
-                avisoLimbo.setLocalTranslation(
-                        cam.getWidth() / 2 - avisoLimbo.getLineWidth() / 2f,
-                        125f,
-                        5f
-                );
+                // ==================================================
+                // LINHA 1 - WARNING
+                // ==================================================
+                BitmapText linha1 = new BitmapText(fonte);
+                linha1.setSize(tamanho);
+                linha1.setColor(ColorRGBA.Red);
+                linha1.setText("!!! WARNING !!!");
 
+                // ==================================================
+                // LINHA 2 - ENTRADA NO LIMBO
+                // ==================================================
+                BitmapText linha2 = new BitmapText(fonte);
+                linha2.setSize(tamanho);
+                linha2.setColor(ColorRGBA.Red);
+                linha2.setText("VOCÊ ENTROU NO LIMBO!");
+
+                // ==================================================
+                // LINHA 3 - RETORNO
+                // ==================================================
+                BitmapText linha3 = new BitmapText(fonte);
+                linha3.setSize(tamanho);
+                linha3.setColor(ColorRGBA.Red);
+                linha3.setText("RETORNE IMEDIATAMENTE!");
+
+                // Centraliza a terceira linha como referência
+                float xBase = (cam.getWidth() - linha3.getLineWidth()) / 2f;
+
+                // Posicionamento individual das linhas
+                linha1.setLocalTranslation(xBase + 150f, 125f, 5f);
+                linha2.setLocalTranslation(xBase + 7f, 90f, 5f);
+                linha3.setLocalTranslation(xBase, 55f, 5f);
+
+                // Junta as três linhas
+                avisoLimbo.attachChild(linha1);
+                avisoLimbo.attachChild(linha2);
+                avisoLimbo.attachChild(linha3);
+
+                // Começa escondido
                 avisoLimbo.setCullHint(Node.CullHint.Always);
 
                 guiNode.attachChild(avisoLimbo);
@@ -1653,9 +1726,8 @@ public class Main extends SimpleApplication {
 
                 // Distancia horizontal em relação ao centro do mapa.
                 float distancia = (float) Math.sqrt(
-                        posicao.x * posicao.x +
-                        posicao.z *posicao.z
-                );
+                                posicao.x * posicao.x +
+                                                posicao.z * posicao.z);
 
                 boolean estaNoLimbo = distancia > LIMITE_MAPA;
 
@@ -1725,7 +1797,7 @@ public class Main extends SimpleApplication {
                                 float distanciaExtra = distancia - LIMITE_MAPA;
 
                                 // Aumenta o dano conforme a distância.
-                                int dano = 10 + (int) (distanciaExtra /10f) * 5;
+                                int dano = 10 + (int) (distanciaExtra / 10f) * 5;
 
                                 player.receberDano(dano);
 
@@ -1876,28 +1948,32 @@ public class Main extends SimpleApplication {
         // INICIAR BOSS
         // ==========================================================
         private void iniciarBoss() {
+                iniciarBoss(null);
+        }
+
+        private void iniciarBoss(TipoBoss tipoEscolhido) {
 
                 audioManager.tocarBossInicio();
                 audioManager.iniciarMusicaBoss();
-
-                System.out.println("================================");
-                System.out.println("ENTRANDO EM BOSS!");
-                System.out.println("NÍVEL: " + player.getNivel());
-                System.out.println("================================");
 
                 estadoAtual = EstadoJogo.BOSS;
 
                 tempoSpawn = 0f;
 
-                // Remove os meteoros normais
                 limparInimigos();
-
-                // Remove projéteis antigos
                 limparProjeteis();
 
-                gerenciadorBoss.iniciarBoss();
+                if (tipoEscolhido == null) {
+                        gerenciadorBoss.iniciarBoss();
+                } else {
+                        gerenciadorBoss.iniciarBoss(tipoEscolhido);
+                }
 
                 inputManager.setCursorVisible(false);
+
+                System.out.println("================================");
+                System.out.println("TESTE DE BOSS: " + (tipoEscolhido == null ? "ALEATÓRIO" : tipoEscolhido));
+                System.out.println("================================");
         }
 
         // ==========================================================
@@ -2433,19 +2509,17 @@ public class Main extends SimpleApplication {
                         atualizarOrientacaoNavePeloMouse();
                 }
 
-                if(miraMouse != null){
+                if (miraMouse != null) {
                         Vector2f posicaoMouse = inputManager.getCursorPosition();
 
                         miraMouse.setLocalTranslation(
-                                posicaoMouse.x,
-                                posicaoMouse.y,
-                                10
-                        );
+                                        posicaoMouse.x,
+                                        posicaoMouse.y,
+                                        10);
 
-                        //A Mira só aparece durante o jogo
+                        // A Mira só aparece durante o jogo
                         miraMouse.setCullHint(
-                                jogadorPodeAgir() ? Node.CullHint.Never : Node.CullHint.Always
-                        );
+                                        jogadorPodeAgir() ? Node.CullHint.Never : Node.CullHint.Always);
                 }
         }
 }
