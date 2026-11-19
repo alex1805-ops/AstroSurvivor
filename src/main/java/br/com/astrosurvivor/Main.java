@@ -683,10 +683,7 @@ public class Main extends SimpleApplication {
                 cam.setLocation(new Vector3f(0, 8, 12));
                 cam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
 
-                cam.setFrustumPerspective(60f,
-                                (float) cam.getWidth() / cam.getHeight(),
-                                0.1f,
-                                1000f);
+                cam.setFrustumPerspective(60f, (float) cam.getWidth() / cam.getHeight(), 0.1f, 1000f);
 
                 // FONTE
                 BitmapFont fonte = assetManager.loadFont("Interface/Fonts/Orbitron.fnt");
@@ -2507,19 +2504,6 @@ public class Main extends SimpleApplication {
                 // MIRA
                 if (jogadorPodeAgir()) {
                         atualizarOrientacaoNavePeloMouse();
-                }
-
-                if (miraMouse != null) {
-                        Vector2f posicaoMouse = inputManager.getCursorPosition();
-
-                        miraMouse.setLocalTranslation(
-                                        posicaoMouse.x,
-                                        posicaoMouse.y,
-                                        10);
-
-                        // A Mira só aparece durante o jogo
-                        miraMouse.setCullHint(
-                                        jogadorPodeAgir() ? Node.CullHint.Never : Node.CullHint.Always);
                 }
         }
 }
