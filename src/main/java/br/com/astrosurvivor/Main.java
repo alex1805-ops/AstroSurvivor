@@ -96,6 +96,7 @@ public class Main extends SimpleApplication {
         // LIMBO
         // ==========================================================
         private Node avisoLimbo;
+        private BitmapText setaLimbo;
 
         private static final float LIMITE_MAPA = 200f;
 
@@ -123,6 +124,10 @@ public class Main extends SimpleApplication {
                 avisoLimbo.setCullHint(Node.CullHint.Always);
 
                 starField.getNode().setCullHint(Node.CullHint.Never);
+
+                if (setaLimbo != null) {
+                        setaLimbo.setCullHint(Node.CullHint.Always);
+                }
         }
 
         // ==========================================================
@@ -692,6 +697,7 @@ public class Main extends SimpleApplication {
                 criarGameOver(fonte);
                 criarTelaUpgrade(fonte);
                 criarAvisoLimbo(fonte);
+                criarSetaLimbo(guiFont);
 
                 // MIRA
                 criarMiraMouse();
@@ -1743,6 +1749,64 @@ public class Main extends SimpleApplication {
         }
 
         // ==========================================================
+        // SETA LIMBO
+        // ==========================================================
+
+        private void criarSetaLimbo(BitmapFont fonte) {
+
+                setaLimbo = new BitmapText(fonte);
+
+                setaLimbo.setText("➤");
+                setaLimbo.setSize(58f);
+                setaLimbo.setColor(new ColorRGBA(0.15f, 0.85f, 1f, 1f));
+
+                setaLimbo.setLocalTranslation(
+                        cam.getWidth() / 2f - 18f,
+                        cam.getHeight() * 0.72f,
+                        10f
+                );
+
+                setaLimbo.setCullHint(BitmapText.CullHint.Always);
+
+                guiNode.attachChild(setaLimbo);
+        }
+
+        private void atualizarSetaLimbo() {
+
+                if (setaLimbo == null || !jogadorNoLimbo) {
+                        return;
+                }
+                
+                Vector3f  posicaoJogador = player.getPosition();
+
+                //Direção do jogador para o centro seguro.
+                Vector3f direcaoSegura = new Vector3f(
+                        -posicaoJogador.x,
+                        0f,
+                        -posicaoJogador.z
+                );
+
+                if (direcaoSegura.lengthSquared() < 0.001f) {
+                        return;
+                }
+
+                direcaoSegura.normalizeLocal();
+
+                // Converte a direção do mundo ppara a tela.
+                Vector3f direitaCamera = cam.getLeft().negate();
+
+                float direcaoX = direcaoSegura.dot(direitaCamera);
+                float direcaoY = direcaoSegura.dot(cam.getUp());
+
+                // O simbolo ➤ aponta inicialmente para cima.
+                float angulo = (float) Math.atan2(direcaoY, direcaoX) - (float) Math.PI / 2f;
+
+                setaLimbo.setLocalRotation(
+                        new Quaternion().fromAngleAxis(angulo, Vector3f.UNIT_Z)
+                );
+        }
+
+        // ==========================================================
         // LIMBO
         // ==========================================================
 
@@ -1767,6 +1831,7 @@ public class Main extends SimpleApplication {
                         tempoPiscarLimbo = 0f;
 
                         avisoVisivel = true;
+                        setaLimbo.setCullHint(Node.CullHint.Never);
 
                         System.out.println("JOGADOR ENTROU NO LIMBO!");
                 }
@@ -1782,6 +1847,7 @@ public class Main extends SimpleApplication {
                         tempoPiscarLimbo = 0f;
 
                         avisoLimbo.setCullHint(Node.CullHint.Always);
+                        setaLimbo.setCullHint(Node.CullHint.Always);
 
                         starField.getNode().setCullHint(Node.CullHint.Never);
 
@@ -1798,6 +1864,7 @@ public class Main extends SimpleApplication {
 
                         // Remove todas as estrelas da visualização.
                         starField.getNode().setCullHint(Node.CullHint.Always);
+                        atualizarSetaLimbo();
 
                         // Atualiza o aviso piscante.
                         tempoPiscarLimbo += tpf;

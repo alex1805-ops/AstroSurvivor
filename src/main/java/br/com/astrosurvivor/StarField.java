@@ -1,13 +1,13 @@
 package br.com.astrosurvivor;
 
+import java.util.Random;
+
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-
-import java.util.Random;
 
 public class StarField {
 
