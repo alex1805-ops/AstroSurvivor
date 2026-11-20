@@ -60,6 +60,7 @@ public class Player {
         // 1 = frente + trás
         // 2 = frente + trás + esquerda + direita
         // 3 = niveis anteriores com 2 tiros para frente
+        // 4 = niveis anteriores com 2 tiros para trás
         // =========================================
 
         private int nivelMultiDisparo = 0;

@@ -1,3 +1,8 @@
+// ==========================================================
+// ASTRO SURVIVOR - COMANDO DE INICIALIZAÇÃO DO JOGO
+// .\mvnw.cmd clean compile exec:java
+// ==========================================================
+
 package br.com.astrosurvivor;
 
 import java.util.ArrayList;
@@ -88,6 +93,39 @@ public class Main extends SimpleApplication {
         private static final String PAUSAR = "Pausar";
 
         // ==========================================================
+        // LIMBO
+        // ==========================================================
+        private Node avisoLimbo;
+
+        private static final float LIMITE_MAPA = 200f;
+
+        private boolean jogadorNoLimbo = false;
+
+        private float tempoDanoLimbo = 0f;
+        private float tempoPiscarLimbo = 0f;
+
+        private boolean avisoVisivel = true;
+
+        private static final float INTERVALO_DANO_LIMBO = 10f;
+
+        // ==========================================================
+        // RESETAR LIMBO
+        // ==========================================================
+        private void resetarLimbo() {
+
+                jogadorNoLimbo = false;
+
+                tempoDanoLimbo = 0f;
+                tempoPiscarLimbo = 0f;
+
+                avisoVisivel = true;
+
+                avisoLimbo.setCullHint(Node.CullHint.Always);
+
+                starField.getNode().setCullHint(Node.CullHint.Never);
+        }
+
+        // ==========================================================
         // MENU
         // ==========================================================
 
@@ -160,6 +198,11 @@ public class Main extends SimpleApplication {
         private static final String UPGRADE_4 = "Upgrade4";
         private static final String UPGRADE_5 = "Upgrade5";
 
+        private static final String TESTE_BOSS_1 = "TesteBoss1";
+        private static final String TESTE_BOSS_2 = "TesteBoss2";
+        private static final String TESTE_BOSS_3 = "TesteBoss3";
+        private static final String TESTE_BOSS_4 = "TesteBoss4";
+
         // ==========================================================
         // AUXILIAR: o jogador pode agir (andar/atirar)?
         // ==========================================================
@@ -206,6 +249,44 @@ public class Main extends SimpleApplication {
                 public void onAction(String name, boolean isPressed, float tpf) {
 
                         if (!isPressed) {
+                                return;
+                        }
+
+                        // =========================================
+                        // TESTE MANUAL DE BOSSES
+                        // =========================================
+
+                        if (name.equals(TESTE_BOSS_1)
+                                        || name.equals(TESTE_BOSS_2)
+                                        || name.equals(TESTE_BOSS_3)
+                                        || name.equals(TESTE_BOSS_4)) {
+
+                                if (estadoAtual == EstadoJogo.JOGANDO || estadoAtual == EstadoJogo.BOSS) {
+
+                                        TipoBoss tipoEscolhido = null;
+
+                                        switch (name) {
+                                                case TESTE_BOSS_1:
+                                                        tipoEscolhido = TipoBoss.ASTEROIDE_GIGANTE;
+                                                        break;
+
+                                                case TESTE_BOSS_2:
+                                                        tipoEscolhido = TipoBoss.ASTEROIDE_GIGANTE_BLINDADO;
+                                                        break;
+
+                                                case TESTE_BOSS_3:
+                                                        tipoEscolhido = TipoBoss.METEORO_EXPLOSIVO;
+                                                        break;
+
+                                                case TESTE_BOSS_4:
+                                                        tipoEscolhido = TipoBoss.HORDA;
+                                                        break;
+                                        }
+
+                                        if (tipoEscolhido != null) {
+                                                iniciarBoss(tipoEscolhido);
+                                        }
+                                }
                                 return;
                         }
 
@@ -395,8 +476,7 @@ public class Main extends SimpleApplication {
                 centralizarTexto(
                                 textosUpgrade[1],
                                 cam.getWidth() / 2f,
-                                460f
-                        );
+                                460f);
         }
 
         private void atualizarBotaoEscudo() {
@@ -417,8 +497,7 @@ public class Main extends SimpleApplication {
                 centralizarTexto(
                                 textosUpgrade[2],
                                 cam.getWidth() / 2f,
-                                380f
-                        );
+                                380f);
         }
 
         private void atualizarBotaoVelocidade() {
@@ -604,11 +683,7 @@ public class Main extends SimpleApplication {
                 cam.setLocation(new Vector3f(0, 8, 12));
                 cam.lookAt(Vector3f.ZERO, Vector3f.UNIT_Y);
 
-                cam.setFrustumPerspective(60f,
-                        (float) cam.getWidth() / cam.getHeight(),
-                        0.1f, 
-                        1000f
-                );
+                cam.setFrustumPerspective(60f, (float) cam.getWidth() / cam.getHeight(), 0.1f, 1000f);
 
                 // FONTE
                 BitmapFont fonte = assetManager.loadFont("Interface/Fonts/Orbitron.fnt");
@@ -616,8 +691,9 @@ public class Main extends SimpleApplication {
                 criarHUD(fonte);
                 criarGameOver(fonte);
                 criarTelaUpgrade(fonte);
+                criarAvisoLimbo(fonte);
 
-                //MIRA
+                // MIRA
                 criarMiraMouse();
 
                 // MENU
@@ -658,6 +734,11 @@ public class Main extends SimpleApplication {
                 inputManager.addMapping(UPGRADE_5, new KeyTrigger(KeyInput.KEY_5));
                 inputManager.addMapping(PAUSAR, new KeyTrigger(KeyInput.KEY_ESCAPE));
 
+                inputManager.addMapping(TESTE_BOSS_1, new KeyTrigger(KeyInput.KEY_F1));
+                inputManager.addMapping(TESTE_BOSS_2, new KeyTrigger(KeyInput.KEY_F2));
+                inputManager.addMapping(TESTE_BOSS_3, new KeyTrigger(KeyInput.KEY_F3));
+                inputManager.addMapping(TESTE_BOSS_4, new KeyTrigger(KeyInput.KEY_F4));
+
                 inputManager.addListener(
                                 analogListener,
                                 MOVIMENTO_FRENTE,
@@ -674,7 +755,11 @@ public class Main extends SimpleApplication {
                                 UPGRADE_3,
                                 UPGRADE_4,
                                 UPGRADE_5,
-                                PAUSAR);
+                                PAUSAR,
+                                TESTE_BOSS_1,
+                                TESTE_BOSS_2,
+                                TESTE_BOSS_3,
+                                TESTE_BOSS_4);
         }
 
         // ==========================================================
@@ -1118,8 +1203,6 @@ public class Main extends SimpleApplication {
 
         // ==========================================================
         // CLIQUE EM GEOMETRIA
-        // CORRIGIDO: usa o tamanho real do Quad (antes era sempre 350x70,
-        // o que quebrava os botões de upgrade, que são 600x60)
         // ==========================================================
 
         private boolean mouseDentro(float mouseX, float mouseY, Geometry botao) {
@@ -1152,6 +1235,8 @@ public class Main extends SimpleApplication {
 
                 estadoAtual = EstadoJogo.JOGANDO;
                 audioManager.iniciarMotorNave();
+
+                resetarLimbo();
 
                 tempoSpawn = 0f;
 
@@ -1276,43 +1361,38 @@ public class Main extends SimpleApplication {
 
                 materialMira.setColor("Color", new ColorRGBA(0.2f, 0.9f, 1f, 1f));
 
-                //Traço superior
+                // Traço superior
                 Geometry superior = new Geometry(
-                        "MiraSuperior",
-                        new Quad(3, 10)
-                );
+                                "MiraSuperior",
+                                new Quad(3, 10));
                 superior.setMaterial(materialMira);
                 superior.setLocalTranslation(-1.5f, 8, 0);
 
-                //Traço inferior
+                // Traço inferior
                 Geometry inferior = new Geometry(
-                        "MiraInferior",
-                        new Quad(3, 10)
-                );
+                                "MiraInferior",
+                                new Quad(3, 10));
                 inferior.setMaterial(materialMira);
                 inferior.setLocalTranslation(-1.5f, -18, 0);
 
-                //Traço esquerdo
+                // Traço esquerdo
                 Geometry esquerdo = new Geometry(
-                        "MiraEsquerda",
-                        new Quad(10, 3)
-                );
+                                "MiraEsquerda",
+                                new Quad(10, 3));
                 esquerdo.setMaterial(materialMira);
                 esquerdo.setLocalTranslation(-18f, -1.5f, 0);
 
-                //Traço direito
+                // Traço direito
                 Geometry direito = new Geometry(
-                        "MiraDireita",
-                        new Quad(10, 3)
-                );
+                                "MiraDireita",
+                                new Quad(10, 3));
                 direito.setMaterial(materialMira);
                 direito.setLocalTranslation(8, -1.5f, 0);
 
-                //Ponto central
+                // Ponto central
                 Geometry centro = new Geometry(
-                        "MiraCentro",
-                        new Quad(3, 3)
-                );
+                                "MiraCentro",
+                                new Quad(3, 3));
                 centro.setMaterial(materialMira);
                 centro.setLocalTranslation(-1.5f, -1.5f, 0);
 
@@ -1328,6 +1408,7 @@ public class Main extends SimpleApplication {
         }
 
         private void atualizarMiraMouse() {
+
                 if (miraMouse == null) {
                         return;
                 }
@@ -1336,21 +1417,18 @@ public class Main extends SimpleApplication {
 
                 miraMouse.setCullHint(mostrarMira ? Node.CullHint.Never : Node.CullHint.Always);
 
-                if(!mostrarMira) {
+                if (!mostrarMira) {
                         return;
                 }
 
                 Vector2f posicaoMouse = inputManager.getCursorPosition();
 
-                float x = Math.max(
-                        0,
-                        Math.min(posicaoMouse.x, cam.getWidth())
-                );
+                // Margem para manter a mira inteira dentro da tela.
+                float margem = 20f;
 
-                float y = Math.max(
-                        0,
-                        Math.min(posicaoMouse.y, cam.getHeight())
-                );
+                float x = Math.max(margem, Math.min(posicaoMouse.x, cam.getWidth() - margem));
+
+                float y = Math.max(margem, Math.min(posicaoMouse.y, cam.getHeight() - margem));
 
                 miraMouse.setLocalTranslation(x, y, 10);
         }
@@ -1583,6 +1661,153 @@ public class Main extends SimpleApplication {
         }
 
         // ==========================================================
+        // AVISO DO LIMBO
+        // ==========================================================
+
+        private void criarAvisoLimbo(BitmapFont fonte) {
+
+                // Nó principal que controla as três linhas juntas
+                avisoLimbo = new Node("AvisoLimbo");
+
+                float tamanho = 34f;
+
+                // ==================================================
+                // LINHA 1 - WARNING
+                // ==================================================
+                BitmapText linha1 = new BitmapText(fonte);
+                linha1.setSize(tamanho);
+                linha1.setColor(ColorRGBA.Red);
+                linha1.setText("!!! WARNING !!!");
+
+                // ==================================================
+                // LINHA 2 - ENTRADA NO LIMBO
+                // ==================================================
+                BitmapText linha2 = new BitmapText(fonte);
+                linha2.setSize(tamanho);
+                linha2.setColor(ColorRGBA.Red);
+                linha2.setText("VOCÊ ENTROU NO LIMBO!");
+
+                // ==================================================
+                // LINHA 3 - RETORNO
+                // ==================================================
+                BitmapText linha3 = new BitmapText(fonte);
+                linha3.setSize(tamanho);
+                linha3.setColor(ColorRGBA.Red);
+                linha3.setText("RETORNE IMEDIATAMENTE!");
+
+                // Centraliza a terceira linha como referência
+                float xBase = (cam.getWidth() - linha3.getLineWidth()) / 2f;
+
+                // Posicionamento individual das linhas
+                linha1.setLocalTranslation(xBase + 150f, 125f, 5f);
+                linha2.setLocalTranslation(xBase + 7f, 90f, 5f);
+                linha3.setLocalTranslation(xBase, 55f, 5f);
+
+                // Junta as três linhas
+                avisoLimbo.attachChild(linha1);
+                avisoLimbo.attachChild(linha2);
+                avisoLimbo.attachChild(linha3);
+
+                // Começa escondido
+                avisoLimbo.setCullHint(Node.CullHint.Always);
+
+                guiNode.attachChild(avisoLimbo);
+        }
+
+        // ==========================================================
+        // LIMBO
+        // ==========================================================
+
+        private void atualizarLimbo(float tpf) {
+                Vector3f posicao = player.getPosition();
+
+                // Distancia horizontal em relação ao centro do mapa.
+                float distancia = (float) Math.sqrt(
+                                posicao.x * posicao.x +
+                                                posicao.z * posicao.z);
+
+                boolean estaNoLimbo = distancia > LIMITE_MAPA;
+
+                // ==================================================
+                // ENTROU NO LIMBO
+                // ==================================================
+
+                if (estaNoLimbo && !jogadorNoLimbo) {
+                        jogadorNoLimbo = true;
+
+                        tempoDanoLimbo = 0f;
+                        tempoPiscarLimbo = 0f;
+
+                        avisoVisivel = true;
+
+                        System.out.println("JOGADOR ENTROU NO LIMBO!");
+                }
+
+                // ==================================================
+                // SAIU DO LIMBO
+                // ==================================================
+
+                if (!estaNoLimbo && jogadorNoLimbo) {
+                        jogadorNoLimbo = false;
+
+                        tempoDanoLimbo = 0f;
+                        tempoPiscarLimbo = 0f;
+
+                        avisoLimbo.setCullHint(Node.CullHint.Always);
+
+                        starField.getNode().setCullHint(Node.CullHint.Never);
+
+                        System.out.println("O JOGADOR RETORNOU AO ESPAÇO SEGURO!");
+
+                        return;
+                }
+
+                // ==================================================
+                // JOGADOR DENTRO DO LIMBO
+                // ==================================================
+
+                if (jogadorNoLimbo) {
+
+                        // Remove todas as estrelas da visualização.
+                        starField.getNode().setCullHint(Node.CullHint.Always);
+
+                        // Atualiza o aviso piscante.
+                        tempoPiscarLimbo += tpf;
+
+                        if (tempoPiscarLimbo >= 0.4f) {
+
+                                avisoVisivel = !avisoVisivel;
+
+                                tempoPiscarLimbo = 0f;
+
+                                avisoLimbo.setCullHint(avisoVisivel ? Node.CullHint.Never : Node.CullHint.Always);
+
+                                tempoPiscarLimbo = 0f;
+                        }
+
+                        // Contabiliza o tempo para aplicar dano ao jogador.
+                        tempoDanoLimbo += tpf;
+
+                        if (tempoDanoLimbo >= INTERVALO_DANO_LIMBO) {
+
+                                // Distância além do limite seguro.
+                                float distanciaExtra = distancia - LIMITE_MAPA;
+
+                                // Aumenta o dano conforme a distância.
+                                int dano = 10 + (int) (distanciaExtra / 10f) * 5;
+
+                                player.receberDano(dano);
+
+                                tempoDanoLimbo = 0f;
+
+                                System.out.println("LIMBO! DANO RECEBIDO: " + dano);
+
+                                System.out.println("DISTÂNCIA ALÉM DO LIMITE: " + distanciaExtra);
+                        }
+                }
+        }
+
+        // ==========================================================
         // COLISAO ENTRE ASTEROIDES
         // ==========================================================
 
@@ -1720,28 +1945,32 @@ public class Main extends SimpleApplication {
         // INICIAR BOSS
         // ==========================================================
         private void iniciarBoss() {
+                iniciarBoss(null);
+        }
+
+        private void iniciarBoss(TipoBoss tipoEscolhido) {
 
                 audioManager.tocarBossInicio();
                 audioManager.iniciarMusicaBoss();
-
-                System.out.println("================================");
-                System.out.println("ENTRANDO EM BOSS!");
-                System.out.println("NÍVEL: " + player.getNivel());
-                System.out.println("================================");
 
                 estadoAtual = EstadoJogo.BOSS;
 
                 tempoSpawn = 0f;
 
-                // Remove os meteoros normais
                 limparInimigos();
-
-                // Remove projéteis antigos
                 limparProjeteis();
 
-                gerenciadorBoss.iniciarBoss();
+                if (tipoEscolhido == null) {
+                        gerenciadorBoss.iniciarBoss();
+                } else {
+                        gerenciadorBoss.iniciarBoss(tipoEscolhido);
+                }
 
                 inputManager.setCursorVisible(false);
+
+                System.out.println("================================");
+                System.out.println("TESTE DE BOSS: " + (tipoEscolhido == null ? "ALEATÓRIO" : tipoEscolhido));
+                System.out.println("================================");
         }
 
         // ==========================================================
@@ -2007,6 +2236,7 @@ public class Main extends SimpleApplication {
                 limparInimigos();
                 limparProjeteis();
                 gerenciadorBoss.limpar();
+                resetarLimbo();
 
                 barraVidaBoss.getNode().setCullHint(Node.CullHint.Always);
 
@@ -2204,12 +2434,23 @@ public class Main extends SimpleApplication {
 
                 gerenciadorBoss.atualizarOndasChoque(tpf);
 
-                if (estadoAtual == EstadoJogo.BOSS) {
-                        atualizarBoss(tpf);
+                // Só executa o Limbo durante a partida
+                if (estadoAtual != EstadoJogo.JOGANDO && estadoAtual != EstadoJogo.BOSS) {
                         return;
                 }
 
-                if (estadoAtual != EstadoJogo.JOGANDO) {
+                // Atualiza o sistema do Limbo.
+                atualizarLimbo(tpf);
+
+                // Verifica se o dano do limbo matou o jogador
+                if (!player.estaVivo()) {
+                        jogadorMorreu();
+                        return;
+                }
+
+                // Atualiza o boss normalmente
+                if (estadoAtual == EstadoJogo.BOSS) {
+                        atualizarBoss(tpf);
                         return;
                 }
 
@@ -2263,21 +2504,6 @@ public class Main extends SimpleApplication {
                 // MIRA
                 if (jogadorPodeAgir()) {
                         atualizarOrientacaoNavePeloMouse();
-                }
-
-                if(miraMouse != null){
-                        Vector2f posicaoMouse = inputManager.getCursorPosition();
-
-                        miraMouse.setLocalTranslation(
-                                posicaoMouse.x,
-                                posicaoMouse.y,
-                                10
-                        );
-
-                        //A Mira só aparece durante o jogo
-                        miraMouse.setCullHint(
-                                jogadorPodeAgir() ? Node.CullHint.Never : Node.CullHint.Always
-                        );
                 }
         }
 }

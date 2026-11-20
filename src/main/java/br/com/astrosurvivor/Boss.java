@@ -1,7 +1,6 @@
 package br.com.astrosurvivor;
 
 import com.jme3.asset.AssetManager;
-import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
@@ -60,6 +59,7 @@ public class Boss {
         // NODE
         // ======================================================
         node = new Node("Boss_" + tipo);
+        node.setLocalTranslation(posicaoInicial);
 
         // ======================================================
         // TAMANHO
@@ -68,15 +68,15 @@ public class Boss {
 
         switch (tipo) {
             case ASTEROIDE_GIGANTE:
-                tamanho = 4f;
+                tamanho = 8f;
                 break;
 
             case ASTEROIDE_GIGANTE_BLINDADO:
-                tamanho = 5f;
+                tamanho = 6f;
                 break;
 
             case METEORO_EXPLOSIVO:
-                tamanho = 3.5f;
+                tamanho = 6f;
                 break;
 
             case HORDA:
@@ -89,54 +89,32 @@ public class Boss {
         }
 
         // ======================================================
-        // COR
-        // ======================================================
-        ColorRGBA cor;
-
-        switch (tipo) {
-            case ASTEROIDE_GIGANTE:
-                cor = ColorRGBA.Gray;
-                break;
-
-            case ASTEROIDE_GIGANTE_BLINDADO:
-                cor = ColorRGBA.DarkGray;
-                break;
-
-            case METEORO_EXPLOSIVO:
-                cor = ColorRGBA.Red;
-                break;
-
-            case HORDA:
-                cor = ColorRGBA.Green;
-                break;
-
-            default:
-                cor = ColorRGBA.Gray;
-                break;
-        }
-
-        // ======================================================
         // MODELOS 3D DOS BOSSES
         // ======================================================
 
         String caminhoModelo = null;
+        String caminhoTextura = null;
 
         switch (tipo) {
 
             case ASTEROIDE_GIGANTE:
-                caminhoModelo = "Models/Bosses/asteroide_gigante.obj";
+                caminhoModelo = "Models/Asteroides/asteroide_grande.obj";
+                caminhoTextura = "Models/Bosses/asteroide_gigante_textura.png";
                 break;
 
             case ASTEROIDE_GIGANTE_BLINDADO:
-                caminhoModelo = "Models/Bosses/asteroide_blindado.obj";
+                caminhoModelo = "Models/Asteroides/asteroide_grande.obj";
+                caminhoTextura = "Models/Bosses/asteroide_blindado_textura.png";
                 break;
 
             case METEORO_EXPLOSIVO:
-                caminhoModelo = "Models/Bosses/asteroide_explosivo_gigante.obj";
+                caminhoModelo = "Models/Asteroides/asteroide_grande.obj";
+                caminhoTextura = "Models/Bosses/meteoro_explosivo_textura.png";
                 break;
-            
+
             case HORDA:
                 caminhoModelo = "Models/Asteroides/asteroide_pequeno.obj";
+                caminhoTextura = "Models/Asteroides/asteroide_pequeno_textura.png";
                 break;
         }
 
@@ -146,10 +124,10 @@ public class Boss {
 
             modelo.setLocalScale(tamanho);
 
+            ModeloAsteroide.aplicarTextura(assetManager, modelo, caminhoTextura);
+
             node.attachChild(modelo);
         }
-
-        node.setLocalTranslation(posicaoInicial);
 
         // ======================================================
         // DIREÇÃO

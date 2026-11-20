@@ -71,12 +71,16 @@ public class GerenciadorBoss {
         // =========================================
 
         public void iniciarBoss() {
+                iniciarBoss(sortearBoss());
+        }
+
+        public void iniciarBoss(TipoBoss tipo) {
 
                 limpar();
 
                 scoreHorda = 0;
 
-                tipoBossAtual = sortearBoss();
+                tipoBossAtual = tipo;
 
                 bossAtivo = true;
                 bossTerminou = false;
@@ -90,32 +94,13 @@ public class GerenciadorBoss {
                                 .clone()
                                 .add(0, 0, -35f);
 
-                // =========================================
-                // HORDA
-                // =========================================
-
                 if (tipoBossAtual == TipoBoss.HORDA) {
 
-                        System.out.println(
-                                        "================================");
-
-                        System.out.println(
-                                        "BOSS: HORDA");
-
-                        System.out.println(
-                                        "SOBREVIVA POR "
-                                                        + duracaoHorda
-                                                        + " SEGUNDOS!");
-
-                        System.out.println(
-                                        "================================");
+                        System.out.println("BOSS: HORDA");
+                        System.out.println("SOBREVIVA POR " + duracaoHorda + " SEGUNDOS!");
 
                         return;
                 }
-
-                // =========================================
-                // BOSS EXPLOSIVO
-                // =========================================
 
                 if (tipoBossAtual == TipoBoss.METEORO_EXPLOSIVO) {
 
@@ -126,16 +111,10 @@ public class GerenciadorBoss {
                                         true);
 
                         explosivos.add(explosivo);
-
-                        rootNode.attachChild(
-                                        explosivo.getNode());
+                        rootNode.attachChild(explosivo.getNode());
 
                         return;
                 }
-
-                // =========================================
-                // BOSS NORMAL
-                // =========================================
 
                 bossAtual = new Boss(
                                 assetManager,
@@ -143,12 +122,9 @@ public class GerenciadorBoss {
                                 posicaoPlayer,
                                 tipoBossAtual);
 
-                rootNode.attachChild(
-                                bossAtual.getNode());
+                rootNode.attachChild(bossAtual.getNode());
 
-                System.out.println(
-                                "BOSS INICIADO: "
-                                                + tipoBossAtual);
+                System.out.println("BOSS INICIADO: " + tipoBossAtual);
         }
 
         // =========================================
@@ -159,8 +135,7 @@ public class GerenciadorBoss {
 
                 TipoBoss[] bosses = TipoBoss.values();
 
-                return bosses[new Random().nextInt(
-                                bosses.length)];
+                return bosses[new Random().nextInt(bosses.length)];
         }
 
         // =========================================

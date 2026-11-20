@@ -1,12 +1,11 @@
 package br.com.astrosurvivor;
 
 import com.jme3.asset.AssetManager;
-import com.jme3.scene.Geometry;
-import com.jme3.scene.Node;
-import com.jme3.scene.shape.Box;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Vector3f;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 
 import java.util.Random;
 
@@ -21,79 +20,136 @@ public class StarField {
     // Quantidade de estrelas
     private int quantidadeEstrelas = 11250;
 
-    public StarField(AssetManager assetManager){
+    // Materiais compartilhados
+    private Material materialBranco;
+    private Material materialAzulado;
+    private Material materialAlaranjado;
+    private Material materialDourado;
+
+    public StarField(AssetManager assetManager) {
 
         node = new Node("StarField");
-
         random = new Random();
 
-        //======================================================
-        // CRIA AS ESTRELAS
-        //======================================================
+        // Materiais das estrelas
+        materialBranco = criarMaterial(assetManager,
+                new ColorRGBA(1f, 1f, 1f, 1f));
 
-        for(int i = 0; i < quantidadeEstrelas; i++){
+        materialAzulado = criarMaterial(assetManager,
+                new ColorRGBA(0.59f, 0.78f, 1f, 1f));
 
-            //==================================================
-            // FORMATO DA ESTRELA
-            //==================================================
+        materialAlaranjado = criarMaterial(assetManager,
+                new ColorRGBA(1f, 0.55f, 0.25f, 1f));
 
-            Box formato = new Box(
-                0.08f,
-                0.08f,
-                0.08f
-            );
+        materialDourado = criarMaterial(assetManager,
+                new ColorRGBA(1f, 0.82f, 0.42f, 1f));
 
-            Geometry estrela = new Geometry(
-                "Estrela",
-                formato
-            );
+        // Carrega o modelo somente uma vez
+        Spatial modeloBase = assetManager.loadModel(
+                "Models/Estrelas/estrela.obj");
 
-            //==================================================
-            // MATERIAL
-            //==================================================
+        // Cria as estrelas
+        for (int i = 0; i < quantidadeEstrelas; i++) {
 
-            Material material = new Material(
-                assetManager,
-                "Common/MatDefs/Misc/Unshaded.j3md"
-            );
+            // Clona a geometria, compartilhando a malha
+            Spatial estrela = modeloBase.clone(false);
 
-            material.setColor(
-                "Color",
-                ColorRGBA.White
-            );
+            // Escolhe a cor
+            Material materialEscolhido = escolherMaterial();
 
-            estrela.setMaterial(material);
+            aplicarMaterial(estrela, materialEscolhido);
 
-            //==================================================
-            // POSIÇÃO ALEATÓRIA
-            //==================================================
+            // Tamanho aleatório
+            float sorteioTamanho = random.nextFloat();
 
-            float x =
-                random.nextFloat() * tamanhoCampo * 2 - tamanhoCampo;
+            float escala;
 
-            float y =
-                random.nextFloat() * tamanhoCampo * 2 - tamanhoCampo;
+            if (sorteioTamanho < 0.80f) {
+                // Estrelas pequenas: maioria
+                escala = 0.10f + random.nextFloat() * 0.10f;
 
-            float z =
-                random.nextFloat() * tamanhoCampo * 2 - tamanhoCampo;
+            } else if (sorteioTamanho < 0.96f) {
+                // Estrelas médias
+                escala = 0.21f + random.nextFloat() * 0.15f;
 
-            estrela.setLocalTranslation(
-                new Vector3f(x, y, z)
-            );
+            } else {
+                // Estrelas grandes: raras
+                escala = 0.35f + random.nextFloat() * 0.25f;
+            }
 
-            //==================================================
-            // ADICIONA AO CAMPO
-            //==================================================
+            estrela.setLocalScale(escala);
 
+            if (escala >= 0.30f) {
+                // Estrelas grandes com cores mais intensas
+                estrela.setLocalScale(escala * 1.3f);
+            }
+
+            // Posição aleatória
+            float x = random.nextFloat() * tamanhoCampo * 2
+                    - tamanhoCampo;
+
+            float y = random.nextFloat() * tamanhoCampo * 2
+                    - tamanhoCampo;
+
+            float z = random.nextFloat() * tamanhoCampo * 2
+                    - tamanhoCampo;
+
+            estrela.setLocalTranslation(x, y, z);
+
+            // Adiciona ao campo
             node.attachChild(estrela);
         }
     }
 
-    //==========================================================
-    // ACESSO AO NODE
-    //==========================================================
+    private Material criarMaterial(
+            AssetManager assetManager,
+            ColorRGBA cor) {
 
-    public Node getNode(){
+        Material material = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+
+        material.setColor("Color", cor);
+
+        return material;
+    }
+
+    private Material escolherMaterial() {
+
+        float sorteio = random.nextFloat();
+
+        if (sorteio < 0.55f) {
+            return materialBranco;
+        }
+
+        if (sorteio < 0.75f) {
+            return materialAzulado;
+        }
+
+        if (sorteio < 0.93f) {
+            return materialAlaranjado;
+        }
+
+        return materialDourado;
+    }
+
+    private void aplicarMaterial(
+            Spatial spatial,
+            Material material) {
+
+        if (spatial instanceof Geometry) {
+
+            ((Geometry) spatial).setMaterial(material);
+
+        } else if (spatial instanceof Node) {
+
+            Node grupo = (Node) spatial;
+
+            for (Spatial filho : grupo.getChildren()) {
+                aplicarMaterial(filho, material);
+            }
+        }
+    }
+
+    public Node getNode() {
         return node;
     }
 }
