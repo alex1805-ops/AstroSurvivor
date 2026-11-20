@@ -1,9 +1,9 @@
 package br.com.astrosurvivor;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.audio.AudioData;
 import com.jme3.audio.AudioNode;
 import com.jme3.scene.Node;
-import com.jme3.audio.AudioData;
 
 public class AudioManager {
 

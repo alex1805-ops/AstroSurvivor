@@ -1,4 +1,3 @@
-
 package br.com.astrosurvivor;
 
 import com.jme3.asset.AssetManager;
