@@ -1229,33 +1229,56 @@ public class Main extends SimpleApplication {
         // INICIAR JOGO
         // ==========================================================
 
+        
         private void iniciarJogo() {
 
-                recordeSalvoNaPartida = false;
+                // Garante que a partida anterior não deixe dados pendentes.
+                limparInimigos();
+                limparProjeteis();
+                limparProjeteisRefletidos();
+                gerenciadorBoss.limpar();
 
-                estadoAtual = EstadoJogo.JOGANDO;
-                audioManager.iniciarMotorNave();
+                // Reseta o progresso do jogador.
+                player.resetarProgresso();
+                player.setPosition(Vector3f.ZERO);
 
-                resetarLimbo();
+                // Reseta pontuação e temporizadores.
+                score = 0;
+                textoScore.setText("SCORE: 0");
 
                 tempoSpawn = 0f;
+                recordeSalvoNaPartida = false;
 
+                // Reseta o Limbo e as barras.
+                resetarLimbo();
+                barraVidaBoss.getNode().setCullHint(Node.CullHint.Always);
+                upgradeNode.setCullHint(Node.CullHint.Always);
+
+                // Atualiza os textos e a vida.
+                atualizarCameraEHud();
+
+                // Fecha as outras telas.
+                telaPause.esconder();
                 menuNode.setCullHint(Node.CullHint.Always);
-
                 menu.getNode().setCullHint(Node.CullHint.Always);
                 gameOverNode.setCullHint(Node.CullHint.Always);
 
+                // Mostra os elementos da partida.
                 player.getNode().setCullHint(Node.CullHint.Never);
                 starField.getNode().setCullHint(Node.CullHint.Never);
 
                 textoVida.setCullHint(BitmapText.CullHint.Never);
                 barraVida.getNode().setCullHint(Node.CullHint.Never);
 
+                // Inicia a partida.
+                estadoAtual = EstadoJogo.JOGANDO;
+
                 criarInimigo();
 
+                audioManager.iniciarMotorNave();
                 inputManager.setCursorVisible(false);
 
-                System.out.println("JOGO INICIADO!");
+                System.out.println("NOVA PARTIDA INICIADA!");
         }
 
         // ==========================================================
@@ -1485,21 +1508,24 @@ public class Main extends SimpleApplication {
         // ==========================================================
         private void criarProjetil(Vector3f posicaoJogador, Vector3f direcao) {
 
-                Vector3f posicaoInicial = posicaoJogador.clone().add(direcao.mult(2.5f));
+                Vector3f posicaoInicial = posicaoJogador.clone().add(direcao.clone().mult(2.5f));
 
-                Projetil projetil = new Projetil(assetManager, posicaoInicial, direcao);
+                Projetil projetil = new Projetil(
+                        assetManager,
+                        posicaoInicial,
+                        direcao,
+                        "Models/Disparos/disparo_plasma.obj",
+                        new ColorRGBA(0.15f, 0.65f, 1f, 1f)
+                );
 
                 projeteis.add(projetil);
-
                 rootNode.attachChild(projetil.getNode());
         }
 
-        private void criarProjetilRefletido(
-                        Vector3f posicaoOrigem,
-                        Vector3f posicaoAlvo) {
+        
+        private void criarProjetilRefletido(Vector3f posicaoOrigem,Vector3f posicaoAlvo) {
 
-                Vector3f direcao = posicaoAlvo.clone()
-                                .subtractLocal(posicaoOrigem);
+                Vector3f direcao = posicaoAlvo.clone().subtractLocal(posicaoOrigem);
 
                 if (direcao.lengthSquared() < 0.001f) {
                         return;
@@ -1507,19 +1533,21 @@ public class Main extends SimpleApplication {
 
                 direcao.normalizeLocal();
 
-                // O tiro nasce um pouco fora do asteroide.
                 Vector3f posicaoInicial = posicaoOrigem.clone()
-                                .addLocal(direcao.mult(2.5f));
+                        .addLocal(direcao.clone().mult(2.5f));
 
                 Projetil projetil = new Projetil(
-                                assetManager,
-                                posicaoInicial,
-                                direcao,
-                                ColorRGBA.Red);
+                        assetManager,
+                        posicaoInicial,
+                        direcao,
+                        "Models/Disparos/disparo_fogo.obj",
+                        new ColorRGBA(1f, 0.35f, 0.04f, 1f)
+                );
 
                 projeteisRefletidos.add(projetil);
                 rootNode.attachChild(projetil.getNode());
         }
+
 
         private void atualizarProjeteisRefletidos(float tpf) {
 

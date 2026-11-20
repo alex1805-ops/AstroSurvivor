@@ -1,3 +1,4 @@
+
 package br.com.astrosurvivor;
 
 import com.jme3.asset.AssetManager;
@@ -7,7 +8,7 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.shape.Box;
+import com.jme3.scene.Spatial;
 
 public class Projetil {
 
@@ -15,32 +16,45 @@ public class Projetil {
     private final Vector3f direcao;
     private final float velocidade = 30f;
 
-    // Construtor normal: mantém os tiros amarelos.
+    // Disparo normal: plasma azul.
     public Projetil(
             AssetManager assetManager,
             Vector3f posicaoInicial,
             Vector3f direcao) {
 
-        this(assetManager, posicaoInicial, direcao, ColorRGBA.Yellow);
+        this(
+            assetManager,
+            posicaoInicial,
+            direcao,
+            "Models/Disparos/disparo_plasma.obj",
+            new ColorRGBA(0.15f, 0.65f, 1f, 1f)
+        );
     }
 
-    // Novo construtor: permite escolher a cor do projétil.
+    // Construtor com modelo e cor personalizados.
     public Projetil(
             AssetManager assetManager,
             Vector3f posicaoInicial,
             Vector3f direcao,
+            String caminhoModelo,
             ColorRGBA cor) {
 
         node = new Node("Projetil");
 
-        Box forma = new Box(0.12f, 0.12f, 0.5f);
-        Geometry corpo = new Geometry("CorpoProjetil", forma);
+        Spatial modelo = assetManager.loadModel(caminhoModelo);
 
-        Material material = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        modelo.setLocalScale(0.55f);
+
+        Material material = new Material(
+            assetManager,
+            "Common/MatDefs/Misc/Unshaded.j3md"
+        );
 
         material.setColor("Color", cor);
-        corpo.setMaterial(material);
-        node.attachChild(corpo);
+
+        aplicarMaterial(modelo, material);
+
+        node.attachChild(modelo);
 
         node.setLocalTranslation(posicaoInicial);
 
@@ -48,7 +62,23 @@ public class Projetil {
 
         Quaternion rotacao = new Quaternion();
         rotacao.lookAt(this.direcao, Vector3f.UNIT_Y);
+
         node.setLocalRotation(rotacao);
+    }
+
+    private void aplicarMaterial(Spatial spatial, Material material) {
+
+        if (spatial instanceof Geometry) {
+            ((Geometry) spatial).setMaterial(material);
+
+        } else if (spatial instanceof Node) {
+
+            Node grupo = (Node) spatial;
+
+            for (Spatial filho : grupo.getChildren()) {
+                aplicarMaterial(filho, material);
+            }
+        }
     }
 
     public void atualizar(float tpf) {
