@@ -19,6 +19,8 @@ public class AudioManager {
     private final AudioNode bossMorte;
     private final AudioNode upgrade;
     private final AudioNode clique;
+    private final AudioNode alarmeLimbo;
+    private final AudioNode impactoBlindado;
 
     private final AudioNode musicaMenu;
     private final AudioNode motorNave;
@@ -36,6 +38,8 @@ public class AudioManager {
         bossMorte = criarSom(assetManager, "Sounds/boss_morte.wav", 1f);
         upgrade = criarSom(assetManager, "Sounds/upgrade.wav", 1f);
         clique = criarSom(assetManager, "Sounds/clique.wav", 1f);
+        alarmeLimbo = criarSom(assetManager, "Sounds/alarme_limbo.wav", 1f);
+        impactoBlindado = criarSom(assetManager, "Sounds/impacto_blindado.wav", 1f);
 
         musicaMenu = criarSom(assetManager, "Sounds/musica_menu.wav", 3.0f);
         musicaMenu.setLooping(true);
@@ -60,6 +64,8 @@ public class AudioManager {
         audioNode.attachChild(musicaMenu);
         audioNode.attachChild(motorNave);
         audioNode.attachChild(musicaBoss);
+        audioNode.attachChild(alarmeLimbo);
+        audioNode.attachChild(impactoBlindado);
     }
 
     private AudioNode criarSom(
@@ -157,5 +163,13 @@ public class AudioManager {
     private void tocar(AudioNode som) {
         som.stop();
         som.play();
+    }
+
+    public void tocarAlarmeLimbo() {
+        tocar(alarmeLimbo);
+    }
+
+    public void tocarImpactoBlindado() {
+        tocar(impactoBlindado);
     }
 }

@@ -1806,9 +1806,9 @@ public class Main extends SimpleApplication {
 
                 // Calcula a direção entre a nave e o centro do mapa
                 Vector3f direcaoSegura = new Vector3f(
-                        -posicaoJogador.x,
-                        0f,
-                        -posicaoJogador.z);
+                                -posicaoJogador.x,
+                                0f,
+                                -posicaoJogador.z);
 
                 // Evita calcular a rotação quando estiver no centro
                 if (direcaoSegura.lengthSquared() < 0.001f) {
@@ -1848,6 +1848,9 @@ public class Main extends SimpleApplication {
                         tempoPiscarLimbo = 0f;
 
                         avisoVisivel = true;
+
+                        avisoLimbo.setCullHint(Node.CullHint.Never);
+                        audioManager.tocarAlarmeLimbo();
 
                         System.out.println("JOGADOR ENTROU NO LIMBO!");
                 }
@@ -1893,7 +1896,9 @@ public class Main extends SimpleApplication {
 
                                 avisoLimbo.setCullHint(avisoVisivel ? Node.CullHint.Never : Node.CullHint.Always);
 
-                                tempoPiscarLimbo = 0f;
+                                if (avisoVisivel) {
+                                        audioManager.tocarAlarmeLimbo();
+                                }
                         }
 
                         // Contabiliza o tempo para aplicar dano ao jogador.
@@ -2459,22 +2464,59 @@ public class Main extends SimpleApplication {
 
                 gerenciadorBoss.atualizar(tpf);
 
+                // ==================================================
+                // ASTEROIDES COMUNS A PARTIR DO NÍVEL 60
+                // ==================================================
+
+                if (player.getNivel() >= 60) {
+
+                        tempoSpawn += tpf;
+
+                        float intervaloSpawnAtual = calcularIntervaloSpawn();
+
+                        if (tempoSpawn >= intervaloSpawnAtual) {
+                                criarInimigo();
+                                tempoSpawn = 0f;
+                        }
+
+                        for (Inimigo inimigo : inimigos) {
+                                inimigo.atualizar(tpf);
+                        }
+
+                        verificarColisoesEntreAsteroides();
+                }
+
+                // ==================================================
+                // PONTUAÇÃO DOS BOSSES
+                // ==================================================
+
                 score += gerenciadorBoss.consumirScorePendente();
+
                 textoScore.setText("SCORE: " + score);
+
+                // ==================================================
+                // BARRA DE VIDA DO BOSS
+                // ==================================================
 
                 int vidaBoss = gerenciadorBoss.getVidaBossAtual();
                 int vidaBossMax = gerenciadorBoss.getVidaBossMaxima();
 
                 if (vidaBossMax > 0) {
+
                         barraVidaBoss.getNode().setCullHint(Node.CullHint.Never);
                         barraVidaBoss.atualizar(vidaBoss, vidaBossMax);
+
                 } else {
+
                         barraVidaBoss.getNode().setCullHint(Node.CullHint.Always);
                 }
 
                 gerenciadorBoss.verificarColisaoPlayer();
 
-                // Projéteis precisam se mover durante o boss
+                // ==================================================
+                // MOVIMENTAÇÃO DOS PROJÉTEIS
+                // ==================================================
+
                 for (Projetil projetil : projeteis) {
                         projetil.atualizar(tpf);
                 }
@@ -2483,12 +2525,25 @@ public class Main extends SimpleApplication {
 
                         Projetil projetil = projeteis.get(i);
 
-                        boolean acertou = gerenciadorBoss.receberDano(projetil.getPosicao(), 30);
+                        boolean eraBossBlindado = gerenciadorBoss
+                                        .getTipoBossAtual() == TipoBoss.ASTEROIDE_GIGANTE_BLINDADO
+                                        && gerenciadorBoss.getVidaBossAtual() > 0;
+
+                        boolean acertou = gerenciadorBoss.receberDano(
+                                        projetil.getPosicao(),
+                                        30,
+                                        player.getNivel());
 
                         if (acertou) {
+
+                                if (eraBossBlindado) {
+                                        audioManager.tocarImpactoBlindado();
+                                }
+
                                 Vector3f origemReflexao = gerenciadorBoss.consumirPosicaoTiroRefletido();
 
                                 if (origemReflexao != null) {
+
                                         System.out.println("O BOSS REFLETIU O TIRO");
 
                                         Vector3f posicaoNave = player.getNode().getWorldTranslation().clone();
@@ -2501,13 +2556,27 @@ public class Main extends SimpleApplication {
                         }
                 }
 
+                // ==================================================
+                // COLISÕES DOS ASTEROIDES COMUNS DURANTE O BOSS
+                // ==================================================
+
+                if (player.getNivel() >= 60) {
+
+                        verificarColisoesComInimigos();
+
+                        verificarColisoesProjetilInimigo();
+                }
+
+                // ==================================================
+                // ATUALIZAR PROJÉTEIS REFLETIDOS
+                // ==================================================
+
                 atualizarProjeteisRefletidos(tpf);
 
                 limparProjeteisDistantes();
 
                 atualizarCameraEHud();
 
-                // Atualiza a mira também durante o Boss
                 if (jogadorPodeAgir()) {
                         atualizarOrientacaoNavePeloMouse();
                 }
@@ -2517,11 +2586,17 @@ public class Main extends SimpleApplication {
                         return;
                 }
 
+                // ==================================================
+                // FIM DO BOSS
+                // ==================================================
+
                 if (gerenciadorBoss.acabouAgora()) {
+
                         audioManager.pararMusicaBoss();
                         audioManager.tocarBossMorte();
 
                         limparProjeteis();
+
                         iniciarEscolhaUpgrade();
 
                         audioManager.iniciarMotorNave();

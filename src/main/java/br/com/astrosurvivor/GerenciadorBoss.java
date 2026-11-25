@@ -301,25 +301,40 @@ public class GerenciadorBoss {
         // PROJÉTIL ACERTA BOSS
         // =========================================
 
-        public boolean receberDano(Vector3f posicaoProjetil, int dano) {
+        public boolean receberDano(Vector3f posicaoProjetil, int dano, int nivelJogador) {
 
-                // Evita reutilizar uma reflexão de um tiro anterior.
                 tiroRefletidoPendente = false;
                 posicaoTiroRefletidoPendente = null;
+
+                // Reflexão: começa em 30%, aumenta 5% a cada 10 níveis.
+                int marcosNivel = nivelJogador / 10;
+
+                float chanceReflexao = Math.min(
+                                1f,
+                                0.30f + marcosNivel * 0.05f);
 
                 // BOSS PRINCIPAL
                 if (bossAtual != null) {
 
-                        float distancia = posicaoProjetil.distance(bossAtual.getPosicao());
+                        float distancia = posicaoProjetil.distance(
+                                        bossAtual.getPosicao());
 
                         if (distancia <= 5f) {
 
                                 boolean podeRefletir = tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE
                                                 || tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE_BLINDADO;
 
-                                if (podeRefletir && Math.random() < 0.3) {
+                                if (podeRefletir && Math.random() < chanceReflexao) {
+
                                         tiroRefletidoPendente = true;
+
                                         posicaoTiroRefletidoPendente = bossAtual.getPosicao().clone();
+                                }
+
+                                // Bosses gigantes podem gerar minions ao receber dano.
+                                if (tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE
+                                                || tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE_BLINDADO) {
+                                        tentarCriarMinion(nivelJogador);
                                 }
 
                                 bossAtual.receberDano(dano);
@@ -337,16 +352,17 @@ public class GerenciadorBoss {
 
                         AsteroideExplosivo explosivo = explosivos.get(i);
 
-                        float distancia = posicaoProjetil.distance(explosivo.getPosicao());
+                        float distancia = posicaoProjetil.distance(
+                                        explosivo.getPosicao());
 
                         if (distancia <= 2f) {
 
-                                // Só o meteoro explosivo grande reflete tiros.
                                 if (explosivo.isBoss()
                                                 && tipoBossAtual == TipoBoss.METEORO_EXPLOSIVO
-                                                && Math.random() < 0.3) {
+                                                && Math.random() < chanceReflexao) {
 
                                         tiroRefletidoPendente = true;
+
                                         posicaoTiroRefletidoPendente = explosivo.getPosicao().clone();
                                 }
 
@@ -365,7 +381,8 @@ public class GerenciadorBoss {
 
                         Inimigo inimigo = fragmentos.get(i);
 
-                        float distancia = posicaoProjetil.distance(inimigo.getPosicao());
+                        float distancia = posicaoProjetil.distance(
+                                        inimigo.getPosicao());
 
                         if (distancia <= 1.2f) {
 
@@ -380,6 +397,53 @@ public class GerenciadorBoss {
                 }
 
                 return false;
+        }
+
+        // =========================================
+        // CRIAÇÃO DE MINIONS
+        // =========================================
+        private void tentarCriarMinion(int nivelJogador) {
+
+                if (nivelJogador < 20) {
+                        return;
+                }
+
+                int marcosNivel = (nivelJogador - 20) / 10;
+
+                float chanceMinion = Math.min(
+                                0.50f,
+                                0.10f + marcosNivel * 0.05f);
+
+                if (Math.random() >= chanceMinion) {
+                        return;
+                }
+
+                Vector3f posicaoBoss = bossAtual.getPosicao().clone();
+
+                // Posição aleatória ao redor do boss.
+                float angulo = (float) (Math.random() * Math.PI * 2);
+
+                float distancia = 5f + (float) (Math.random() * 3f);
+
+                Vector3f deslocamento = new Vector3f(
+                                (float) Math.cos(angulo) * distancia,
+                                0f,
+                                (float) Math.sin(angulo) * distancia
+                        );
+
+                Vector3f posicaoInicial = posicaoBoss.add(deslocamento);
+
+                Inimigo minion = new Inimigo(
+                                assetManager,
+                                posicaoInicial,
+                                player.getPosition().clone(),
+                                TipoAsteroide.PEQUENO);
+
+                fragmentos.add(minion);
+
+                rootNode.attachChild(minion.getNode());
+
+                System.out.println("BOSS GEROU UM MINION! Chance: " + (int) (chanceMinion * 100) + "%");
         }
 
         // =========================================
