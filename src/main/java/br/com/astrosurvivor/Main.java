@@ -32,8 +32,6 @@ import javax.swing.SwingUtilities;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.shape.Cylinder;
-import com.jme3.scene.shape.Dome;
 import com.jme3.math.FastMath;
 
 public class Main extends SimpleApplication {
@@ -1244,7 +1242,6 @@ public class Main extends SimpleApplication {
         // INICIAR JOGO
         // ==========================================================
 
-        
         private void iniciarJogo() {
 
                 // Garante que a partida anterior não deixe dados pendentes.
@@ -1526,19 +1523,17 @@ public class Main extends SimpleApplication {
                 Vector3f posicaoInicial = posicaoJogador.clone().add(direcao.clone().mult(2.5f));
 
                 Projetil projetil = new Projetil(
-                        assetManager,
-                        posicaoInicial,
-                        direcao,
-                        "Models/Disparos/disparo_plasma.obj",
-                        new ColorRGBA(0.15f, 0.65f, 1f, 1f)
-                );
+                                assetManager,
+                                posicaoInicial,
+                                direcao,
+                                "Models/Disparos/disparo_plasma.obj",
+                                new ColorRGBA(0.15f, 0.65f, 1f, 1f));
 
                 projeteis.add(projetil);
                 rootNode.attachChild(projetil.getNode());
         }
 
-        
-        private void criarProjetilRefletido(Vector3f posicaoOrigem,Vector3f posicaoAlvo) {
+        private void criarProjetilRefletido(Vector3f posicaoOrigem, Vector3f posicaoAlvo) {
 
                 Vector3f direcao = posicaoAlvo.clone().subtractLocal(posicaoOrigem);
 
@@ -1549,20 +1544,18 @@ public class Main extends SimpleApplication {
                 direcao.normalizeLocal();
 
                 Vector3f posicaoInicial = posicaoOrigem.clone()
-                        .addLocal(direcao.clone().mult(2.5f));
+                                .addLocal(direcao.clone().mult(2.5f));
 
                 Projetil projetil = new Projetil(
-                        assetManager,
-                        posicaoInicial,
-                        direcao,
-                        "Models/Disparos/disparo_fogo.obj",
-                        new ColorRGBA(1f, 0.35f, 0.04f, 1f)
-                );
+                                assetManager,
+                                posicaoInicial,
+                                direcao,
+                                "Models/Disparos/disparo_fogo.obj",
+                                new ColorRGBA(1f, 0.35f, 0.04f, 1f));
 
                 projeteisRefletidos.add(projetil);
                 rootNode.attachChild(projetil.getNode());
         }
-
 
         private void atualizarProjeteisRefletidos(float tpf) {
 
@@ -1764,53 +1757,18 @@ public class Main extends SimpleApplication {
         private void criarSetaLimbo() {
                 setaLimbo = new Node("SetaLimbo");
 
-                Material materialSeta = new Material(
-                        assetManager,
-                        "Common/MatDefs/Misc/Unshaded.j3md"
-                );
+                // Carrega o modelo 3D
+                Spatial modeloSeta = assetManager.loadModel("Models/SetaLimbo/seta_limbo.obj");
 
-                materialSeta.setColor("Color", new ColorRGBA(0.05f, 0.85f, 1f, 1f));
+                // Ajusta o tamanho do modelo
+                modeloSeta.setLocalScale(1f);
 
-                // Haste
-                Geometry haste = new Geometry(
-                        "HasteSeta",
-                        new Cylinder(8, 12, 0.07f, 0.8f)
-                );
+                setaLimbo.attachChild(modeloSeta);
 
-                haste.setMaterial(materialSeta);
-
-                haste.setLocalRotation(
-                        new Quaternion().fromAngleAxis(
-                        FastMath.HALF_PI,
-                        Vector3f.UNIT_X
-                        )
-                );
-
-                haste.setLocalTranslation(0f, 0f, 0.4f);
-
-                // Ponta cônica
-                Geometry ponta = new Geometry(
-                "PontaSeta",
-                new Cylinder(8, 16, 0.22f, 0.35f, true)
-                );
-
-                ponta.setMaterial(materialSeta);
-
-                // Deixa o cone alinhado ao eixo Z da seta
-                ponta.setLocalRotation(
-                        new Quaternion().fromAngleAxis(
-                                FastMath.HALF_PI,
-                                Vector3f.UNIT_X
-                        )
-                );
-
-                ponta.setLocalTranslation(0f, 0f, 0.95f);
-
-                setaLimbo.attachChild(haste);
-                setaLimbo.attachChild(ponta);
-
+                // Esconde a seta inicialmente
                 setaLimbo.setCullHint(Spatial.CullHint.Always);
 
+                // Adiciona ao cenário
                 rootNode.attachChild(setaLimbo);
         }
 
@@ -1819,8 +1777,12 @@ public class Main extends SimpleApplication {
         // ==========================================================
 
         private void atualizarSetaLimbo(float tpf) {
-                if (setaLimbo == null || player == null) return;
 
+                if (setaLimbo == null || player == null) {
+                        return;
+                }
+
+                // Esconde a seta quando o jogador não está no Limbo
                 if (!jogadorNoLimbo) {
                         setaLimbo.setCullHint(Spatial.CullHint.Always);
                         return;
@@ -1828,36 +1790,39 @@ public class Main extends SimpleApplication {
 
                 setaLimbo.setCullHint(Spatial.CullHint.Never);
 
+                // Animação vertical suave
                 tempoSeta += tpf * velocidadePulsacao;
 
                 float pulsacao = FastMath.sin(tempoSeta) * 0.12f;
 
+                // Posição atual da nave
                 Vector3f posicaoJogador = player.getNode().getWorldTranslation();
 
+                // Posiciona a seta acima da nave
                 setaLimbo.setLocalTranslation(
-                        posicaoJogador.x,
-                        posicaoJogador.y + alturaSeta + pulsacao,
-                        posicaoJogador.z
-                );
+                                posicaoJogador.x,
+                                posicaoJogador.y + alturaSeta + pulsacao,
+                                posicaoJogador.z);
 
-                // Direção exata entre a nave e o centro do mapa
+                // Calcula a direção entre a nave e o centro do mapa
                 Vector3f direcaoSegura = new Vector3f(
                         -posicaoJogador.x,
                         0f,
-                        -posicaoJogador.z
-                );
+                        -posicaoJogador.z);
 
-                if (direcaoSegura.lengthSquared() < 0.001f) return;
+                // Evita calcular a rotação quando estiver no centro
+                if (direcaoSegura.lengthSquared() < 0.001f) {
+                        return;
+                }
 
                 direcaoSegura.normalizeLocal();
 
-                // Faz o eixo frontal (+Z) da seta apontar para o centro
-                setaLimbo.lookAt(
-                        setaLimbo.getLocalTranslation().add(direcaoSegura),
-                        Vector3f.UNIT_Y
-                );
-        }
+                // Calcula o ângulo para o modelo apontar ao centro
+                float angulo = FastMath.atan2(direcaoSegura.x, direcaoSegura.z);
 
+                // Rotaciona a seta no eixo vertical
+                setaLimbo.setLocalRotation(new Quaternion().fromAngleAxis(angulo, Vector3f.UNIT_Y));
+        }
         // ==========================================================
         // LIMBO
         // ==========================================================
