@@ -31,6 +31,10 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
+import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Cylinder;
+import com.jme3.scene.shape.Dome;
+import com.jme3.math.FastMath;
 
 public class Main extends SimpleApplication {
 
@@ -96,7 +100,11 @@ public class Main extends SimpleApplication {
         // LIMBO
         // ==========================================================
         private Node avisoLimbo;
-        private BitmapText setaLimbo;
+        private Node setaLimbo;
+
+        private float alturaSeta = 2.5f;
+        private float tempoSeta = 0f;
+        private float velocidadePulsacao = 2.5f;
 
         private static final float LIMITE_MAPA = 200f;
 
@@ -118,6 +126,7 @@ public class Main extends SimpleApplication {
 
                 tempoDanoLimbo = 0f;
                 tempoPiscarLimbo = 0f;
+                tempoSeta = 0f;
 
                 avisoVisivel = true;
 
@@ -126,7 +135,7 @@ public class Main extends SimpleApplication {
                 starField.getNode().setCullHint(Node.CullHint.Never);
 
                 if (setaLimbo != null) {
-                        setaLimbo.setCullHint(Node.CullHint.Always);
+                        setaLimbo.setCullHint(Spatial.CullHint.Always);
                 }
         }
 
@@ -697,7 +706,7 @@ public class Main extends SimpleApplication {
                 criarGameOver(fonte);
                 criarTelaUpgrade(fonte);
                 criarAvisoLimbo(fonte);
-                criarSetaLimbo(guiFont);
+                criarSetaLimbo();
 
                 // MIRA
                 criarMiraMouse();
@@ -1752,57 +1761,100 @@ public class Main extends SimpleApplication {
         // SETA LIMBO
         // ==========================================================
 
-        private void criarSetaLimbo(BitmapFont fonte) {
+        private void criarSetaLimbo() {
+                setaLimbo = new Node("SetaLimbo");
 
-                setaLimbo = new BitmapText(fonte);
-
-                setaLimbo.setText("➤");
-                setaLimbo.setSize(58f);
-                setaLimbo.setColor(new ColorRGBA(0.15f, 0.85f, 1f, 1f));
-
-                setaLimbo.setLocalTranslation(
-                        cam.getWidth() / 2f - 18f,
-                        cam.getHeight() * 0.72f,
-                        10f
+                Material materialSeta = new Material(
+                        assetManager,
+                        "Common/MatDefs/Misc/Unshaded.j3md"
                 );
 
-                setaLimbo.setCullHint(BitmapText.CullHint.Always);
+                materialSeta.setColor("Color", new ColorRGBA(0.05f, 0.85f, 1f, 1f));
 
-                guiNode.attachChild(setaLimbo);
+                // Haste
+                Geometry haste = new Geometry(
+                        "HasteSeta",
+                        new Cylinder(8, 12, 0.07f, 0.8f)
+                );
+
+                haste.setMaterial(materialSeta);
+
+                haste.setLocalRotation(
+                        new Quaternion().fromAngleAxis(
+                        FastMath.HALF_PI,
+                        Vector3f.UNIT_X
+                        )
+                );
+
+                haste.setLocalTranslation(0f, 0f, 0.4f);
+
+                // Ponta cônica
+                Geometry ponta = new Geometry(
+                "PontaSeta",
+                new Cylinder(8, 16, 0.22f, 0.35f, true)
+                );
+
+                ponta.setMaterial(materialSeta);
+
+                // Deixa o cone alinhado ao eixo Z da seta
+                ponta.setLocalRotation(
+                        new Quaternion().fromAngleAxis(
+                                FastMath.HALF_PI,
+                                Vector3f.UNIT_X
+                        )
+                );
+
+                ponta.setLocalTranslation(0f, 0f, 0.95f);
+
+                setaLimbo.attachChild(haste);
+                setaLimbo.attachChild(ponta);
+
+                setaLimbo.setCullHint(Spatial.CullHint.Always);
+
+                rootNode.attachChild(setaLimbo);
         }
 
-        private void atualizarSetaLimbo() {
+        // ==========================================================
+        // ATUALIZAR SETA LIMBO
+        // ==========================================================
 
-                if (setaLimbo == null || !jogadorNoLimbo) {
+        private void atualizarSetaLimbo(float tpf) {
+                if (setaLimbo == null || player == null) return;
+
+                if (!jogadorNoLimbo) {
+                        setaLimbo.setCullHint(Spatial.CullHint.Always);
                         return;
                 }
-                
-                Vector3f  posicaoJogador = player.getPosition();
 
-                //Direção do jogador para o centro seguro.
+                setaLimbo.setCullHint(Spatial.CullHint.Never);
+
+                tempoSeta += tpf * velocidadePulsacao;
+
+                float pulsacao = FastMath.sin(tempoSeta) * 0.12f;
+
+                Vector3f posicaoJogador = player.getNode().getWorldTranslation();
+
+                setaLimbo.setLocalTranslation(
+                        posicaoJogador.x,
+                        posicaoJogador.y + alturaSeta + pulsacao,
+                        posicaoJogador.z
+                );
+
+                // Direção exata entre a nave e o centro do mapa
                 Vector3f direcaoSegura = new Vector3f(
                         -posicaoJogador.x,
                         0f,
                         -posicaoJogador.z
                 );
 
-                if (direcaoSegura.lengthSquared() < 0.001f) {
-                        return;
-                }
+                if (direcaoSegura.lengthSquared() < 0.001f) return;
 
                 direcaoSegura.normalizeLocal();
 
-                // Converte a direção do mundo ppara a tela.
-                Vector3f direitaCamera = cam.getLeft().negate();
-
-                float direcaoX = direcaoSegura.dot(direitaCamera);
-                float direcaoY = direcaoSegura.dot(cam.getUp());
-
-                // O simbolo ➤ aponta inicialmente para cima.
-                float angulo = (float) Math.atan2(direcaoY, direcaoX) - (float) Math.PI / 2f;
-
-                setaLimbo.setLocalRotation(
-                        new Quaternion().fromAngleAxis(angulo, Vector3f.UNIT_Z)
+                // Faz o eixo frontal (+Z) da seta apontar para o centro
+                setaLimbo.lookAt(
+                        setaLimbo.getLocalTranslation().add(direcaoSegura),
+                        Vector3f.UNIT_Y
                 );
         }
 
@@ -1831,7 +1883,6 @@ public class Main extends SimpleApplication {
                         tempoPiscarLimbo = 0f;
 
                         avisoVisivel = true;
-                        setaLimbo.setCullHint(Node.CullHint.Never);
 
                         System.out.println("JOGADOR ENTROU NO LIMBO!");
                 }
@@ -1847,7 +1898,7 @@ public class Main extends SimpleApplication {
                         tempoPiscarLimbo = 0f;
 
                         avisoLimbo.setCullHint(Node.CullHint.Always);
-                        setaLimbo.setCullHint(Node.CullHint.Always);
+                        setaLimbo.setCullHint(Spatial.CullHint.Always);
 
                         starField.getNode().setCullHint(Node.CullHint.Never);
 
@@ -1864,7 +1915,7 @@ public class Main extends SimpleApplication {
 
                         // Remove todas as estrelas da visualização.
                         starField.getNode().setCullHint(Node.CullHint.Always);
-                        atualizarSetaLimbo();
+                        atualizarSetaLimbo(tpf);
 
                         // Atualiza o aviso piscante.
                         tempoPiscarLimbo += tpf;
