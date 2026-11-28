@@ -468,6 +468,19 @@ public class Player {
         }
 
         // =========================================
+        // MODO DEUS
+        // =========================================
+
+        public boolean temTodosUpgradesNoMaximo() {
+
+        return nivelVidaMaxima >= 5
+                && nivelRegeneracao >= 4
+                && nivelEscudo >= 4
+                && nivelVelocidade >= 5
+                && nivelMultiDisparo >= 4;
+        }
+
+        // =========================================
         // RESET VIDA
         // =========================================
 

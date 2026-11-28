@@ -1321,55 +1321,102 @@ public class Main extends SimpleApplication {
         // ==========================================================
 
         private void atirar() {
+
                 audioManager.tocarTiro();
 
                 Vector3f posicao = player.getNode()
-                                .getWorldTranslation().clone();
+                        .getWorldTranslation().clone();
 
                 Quaternion rotacao = player.getNode()
-                                .getWorldRotation();
+                        .getWorldRotation();
 
                 int nivel = player.getNivelMultiDisparo();
 
+                boolean modoDeus = player.temTodosUpgradesNoMaximo();
+
                 // Direções relativas à orientação da nave.
                 Vector3f frente = rotacao.mult(
-                                new Vector3f(0, 0, -1)).normalizeLocal();
+                        new Vector3f(0, 0, -1)).normalizeLocal();
 
                 Vector3f tras = frente.negate();
 
                 Vector3f direita = rotacao.mult(
-                                new Vector3f(1, 0, 0)).normalizeLocal();
+                        new Vector3f(1, 0, 0)).normalizeLocal();
 
                 Vector3f esquerda = direita.negate();
 
-                // Disparo frontal.
+                // =========================================
+                // DISPARO FRONTAL
+                // =========================================
+
                 criarProjetil(posicao.clone(), frente.clone());
 
-                // Nível 1: disparo para trás.
+                // =========================================
+                // NÍVEL 1: DISPARO TRASEIRO
+                // =========================================
+
                 if (nivel >= 1) {
                         criarProjetil(posicao.clone(), tras.clone());
                 }
 
-                // Nível 2: disparos laterais.
+                // =========================================
+                // NÍVEL 2: DISPAROS LATERAIS
+                // =========================================
+
                 if (nivel >= 2) {
                         criarProjetil(posicao.clone(), esquerda.clone());
                         criarProjetil(posicao.clone(), direita.clone());
                 }
 
-                // Nível 3: segundo disparo frontal, deslocado para a direita.
+                // =========================================
+                // NÍVEL 3: DISPARO EXTRA FRONTAL
+                // =========================================
+
                 if (nivel >= 3) {
-                        Vector3f posicaoExtra = posicao.add(
-                                        direita.mult(0.5f));
+
+                        Vector3f posicaoExtra = posicao.clone()
+                                .add(direita.mult(0.5f));
 
                         criarProjetil(posicaoExtra, frente.clone());
                 }
 
-                // Nível 4: terceiro disparo frontal, deslocado para a esquerda.
+                // =========================================
+                // NÍVEL 4: DISPARO EXTRA TRASEIRO
+                // =========================================
+
                 if (nivel >= 4) {
-                        Vector3f posicaoExtra = posicao.add(
-                                        direita.mult(0.5f));
+
+                        Vector3f posicaoExtra = posicao.clone()
+                                .add(direita.mult(-0.5f));
 
                         criarProjetil(posicaoExtra, tras.clone());
+                }
+
+                // =========================================
+                // MODO DEUS: DISPAROS DIAGONAIS
+                // =========================================
+
+                if (modoDeus) {
+
+                        Vector3f diagonalFrenteDireita = frente.clone()
+                                .add(direita).normalizeLocal();
+
+                        Vector3f diagonalFrenteEsquerda = frente.clone()
+                                .add(esquerda).normalizeLocal();
+
+                        Vector3f diagonalTrasDireita = tras.clone()
+                                .add(direita).normalizeLocal();
+
+                        Vector3f diagonalTrasEsquerda = tras.clone()
+                                .add(esquerda).normalizeLocal();
+
+                        criarProjetil(posicao.clone(), diagonalFrenteDireita);
+                        criarProjetil(posicao.clone(), diagonalFrenteEsquerda);
+
+                        criarProjetil(posicao.clone(), diagonalTrasDireita);
+                        criarProjetil(posicao.clone(), diagonalTrasEsquerda);
+
+                        System.out.println("MODO DEUS ATIVADO!");
                 }
 
                 System.out.println("Multi-disparo nível: " + nivel);
