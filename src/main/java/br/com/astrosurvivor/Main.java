@@ -459,7 +459,7 @@ public class Main extends SimpleApplication {
                         textosUpgrade[0].setColor(ColorRGBA.DarkGray);
                 } else {
                         botoesUpgrade[0].getMaterial().setColor("Color", ColorRGBA.DarkGray);
-                        textosUpgrade[0].setText("1 - VIDA MÁXIMA (NÍVEL " + player.getNivelVidaMaxima() + "/5");
+                        textosUpgrade[0].setText("1 - VIDA MÁXIMA (NÍVEL " + player.getNivelVidaMaxima() + "/5)");
                         textosUpgrade[0].setSize(25);
                         textosUpgrade[0].setColor(ColorRGBA.White);
                 }
@@ -480,7 +480,7 @@ public class Main extends SimpleApplication {
                         textosUpgrade[1].setColor(ColorRGBA.DarkGray);
                 } else {
                         botoesUpgrade[1].getMaterial().setColor("Color", ColorRGBA.DarkGray);
-                        textosUpgrade[1].setText("2 - REGENERAÇÃO (NÍVEL " + player.getNivelRegeneracao() + "/5");
+                        textosUpgrade[1].setText("2 - REGENERAÇÃO (NÍVEL " + player.getNivelRegeneracao() + "/4)");
                         textosUpgrade[1].setSize(25);
                         textosUpgrade[1].setColor(ColorRGBA.White);
                 }
@@ -501,7 +501,7 @@ public class Main extends SimpleApplication {
                         textosUpgrade[2].setColor(ColorRGBA.DarkGray);
                 } else {
                         botoesUpgrade[2].getMaterial().setColor("Color", ColorRGBA.DarkGray);
-                        textosUpgrade[2].setText("3 - ESCUDO (NÍVEL " + player.getNivelEscudo() + "/5");
+                        textosUpgrade[2].setText("3 - ESCUDO (NÍVEL " + player.getNivelEscudo() + "/4)");
                         textosUpgrade[2].setSize(25);
                         textosUpgrade[2].setColor(ColorRGBA.White);
                 }
@@ -522,7 +522,7 @@ public class Main extends SimpleApplication {
                         textosUpgrade[3].setColor(ColorRGBA.DarkGray);
                 } else {
                         botoesUpgrade[3].getMaterial().setColor("Color", ColorRGBA.DarkGray);
-                        textosUpgrade[3].setText("4 - VELOCIDADE (NÍVEL " + player.getNivelVelocidade() + "/5");
+                        textosUpgrade[3].setText("4 - VELOCIDADE (NÍVEL " + player.getNivelVelocidade() + "/5)");
                         textosUpgrade[3].setSize(25);
                         textosUpgrade[3].setColor(ColorRGBA.White);
                 }
@@ -543,7 +543,7 @@ public class Main extends SimpleApplication {
                         textosUpgrade[4].setColor(ColorRGBA.DarkGray);
                 } else {
                         botoesUpgrade[4].getMaterial().setColor("Color", ColorRGBA.DarkGray);
-                        textosUpgrade[4].setText("5 - MULTI-DISPARO");
+                        textosUpgrade[4].setText("5 - MULTI-DISPARO (NÍVEL " + player.getNivelMultiDisparo() + "/4)");
                         textosUpgrade[4].setSize(25);
                         textosUpgrade[4].setColor(ColorRGBA.White);
                 }

@@ -15,6 +15,7 @@ public class GerenciadorBoss {
         private final Player player;
 
         private final List<Inimigo> fragmentos = new ArrayList<>();
+        private final List<Inimigo> minions = new ArrayList<>();
 
         private final List<AsteroideExplosivo> explosivos = new ArrayList<>();
 
@@ -194,6 +195,14 @@ public class GerenciadorBoss {
                 }
 
                 // =========================================
+                // MINIONS
+                // =========================================
+
+                for (Inimigo minion : minions) {
+                        minion.atualizar(tpf);
+                }
+
+                // =========================================
                 // TEMPO RESTANTE FRAGMENTOS
                 // =========================================
                 if (tempoRestanteFragmentos >= 0f) {
@@ -321,8 +330,7 @@ public class GerenciadorBoss {
 
                         if (distancia <= 5f) {
 
-                                boolean podeRefletir = tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE
-                                                || tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE_BLINDADO;
+                                boolean podeRefletir = tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE || tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE_BLINDADO;
 
                                 if (podeRefletir && Math.random() < chanceReflexao) {
 
@@ -332,9 +340,8 @@ public class GerenciadorBoss {
                                 }
 
                                 // Bosses gigantes podem gerar minions ao receber dano.
-                                if (tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE
-                                                || tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE_BLINDADO) {
-                                        tentarCriarMinion(nivelJogador);
+                                if (tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE || tipoBossAtual == TipoBoss.ASTEROIDE_GIGANTE_BLINDADO) {
+                                        tentarCriarMinion(nivelJogador, bossAtual.getPosicao());
                                 }
 
                                 bossAtual.receberDano(dano);
@@ -357,13 +364,14 @@ public class GerenciadorBoss {
 
                         if (distancia <= 2f) {
 
-                                if (explosivo.isBoss()
-                                                && tipoBossAtual == TipoBoss.METEORO_EXPLOSIVO
-                                                && Math.random() < chanceReflexao) {
+                                if (explosivo.isBoss() && tipoBossAtual == TipoBoss.METEORO_EXPLOSIVO) {
 
-                                        tiroRefletidoPendente = true;
+                                        if (Math.random() < chanceReflexao) {
+                                                tiroRefletidoPendente = true;
+                                                posicaoTiroRefletidoPendente = explosivo.getPosicao().clone();
+                                        }
 
-                                        posicaoTiroRefletidoPendente = explosivo.getPosicao().clone();
+                                        tentarCriarMinion(nivelJogador, explosivo.getPosicao());
                                 }
 
                                 explosivo.receberDano(dano);
@@ -396,13 +404,38 @@ public class GerenciadorBoss {
                         }
                 }
 
+                // MINIONS
+
+                for (int i = minions.size() - 1; i >= 0; i--) {
+
+                        Inimigo minion = minions.get(i);
+
+                        float distancia = posicaoProjetil.distance(minion.getPosicao());
+
+                        if (distancia <= 1.2f) {
+
+                                minion.receberDano(dano);
+
+                                if (!minion.estaVivo()) {
+
+                                        rootNode.detachChild(minion.getNode());
+                                        minions.remove(i);
+
+                                        scorePendente += 100;
+                                }
+
+                                return true;
+                        }
+                }
+
                 return false;
         }
 
         // =========================================
         // CRIAÇÃO DE MINIONS
         // =========================================
-        private void tentarCriarMinion(int nivelJogador) {
+
+        private void tentarCriarMinion(int nivelJogador, Vector3f posicaoBoss) {
 
                 if (nivelJogador < 20) {
                         return;
@@ -410,41 +443,37 @@ public class GerenciadorBoss {
 
                 int marcosNivel = (nivelJogador - 20) / 10;
 
-                float chanceMinion = Math.min(
-                                0.50f,
-                                0.10f + marcosNivel * 0.05f);
+                float chanceMinion = Math.min(0.50f, 0.10f + marcosNivel * 0.05f);
 
                 if (Math.random() >= chanceMinion) {
                         return;
                 }
 
-                Vector3f posicaoBoss = bossAtual.getPosicao().clone();
+                Vector3f posicaoInicial = posicaoBoss.clone();
 
-                // Posição aleatória ao redor do boss.
                 float angulo = (float) (Math.random() * Math.PI * 2);
-
                 float distancia = 5f + (float) (Math.random() * 3f);
 
                 Vector3f deslocamento = new Vector3f(
-                                (float) Math.cos(angulo) * distancia,
-                                0f,
-                                (float) Math.sin(angulo) * distancia
-                        );
+                        (float) Math.cos(angulo) * distancia,
+                        0f,
+                        (float) Math.sin(angulo) * distancia
+                );
 
-                Vector3f posicaoInicial = posicaoBoss.add(deslocamento);
+                posicaoInicial.addLocal(deslocamento);
 
                 Inimigo minion = new Inimigo(
-                                assetManager,
-                                posicaoInicial,
-                                player.getPosition().clone(),
-                                TipoAsteroide.PEQUENO);
+                        assetManager,
+                        posicaoInicial,
+                        player.getPosition().clone(),
+                        TipoAsteroide.PEQUENO);
 
-                fragmentos.add(minion);
+                minions.add(minion);
 
                 rootNode.attachChild(minion.getNode());
 
                 System.out.println("BOSS GEROU UM MINION! Chance: " + (int) (chanceMinion * 100) + "%");
-        }
+                }
 
         // =========================================
         // CONSUMIR TIRO REFLETIDO
@@ -865,6 +894,12 @@ public class GerenciadorBoss {
 
                 fragmentos.clear();
 
+                for (Inimigo minion : minions) {
+                        rootNode.detachChild(minion.getNode());
+                }
+
+                minions.clear();
+
                 for (AsteroideExplosivo explosivo : explosivos) {
 
                         rootNode.detachChild(explosivo.getNode());
@@ -993,6 +1028,25 @@ public class GerenciadorBoss {
                 }
 
                 // =====================================
+                // COLISÃO COM MINIONS
+                // =====================================
+
+                for (int i = minions.size() - 1; i >= 0; i--) {
+
+                        Inimigo minion = minions.get(i);
+
+                        float distancia = player.getPosition().distance(minion.getPosicao());
+
+                        if (distancia <= 3f) {
+
+                                player.receberDano(10);
+
+                                rootNode.detachChild(minion.getNode());
+                                minions.remove(i);
+                        }
+                }
+
+                // =====================================
                 // COLISÃO COM ASTEROIDES EXPLOSIVOS
                 // PEQUENOS
                 // =====================================
@@ -1111,7 +1165,7 @@ public class GerenciadorBoss {
 
         public int getQuantidadeInimigos() {
 
-                return fragmentos.size() + explosivos.size();
+                return fragmentos.size() + explosivos.size() + minions.size();
         }
 
 }

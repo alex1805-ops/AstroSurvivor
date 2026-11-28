@@ -1,12 +1,11 @@
 package br.com.astrosurvivor;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.material.RenderState;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-
-import com.jme3.material.RenderState;
-import com.jme3.scene.Geometry;
 
 public class Player {
 
@@ -296,8 +295,10 @@ public class Player {
                         return;
                 }
 
+                nivelVelocidade++;
                 velocidade += quantidade;
 
+                System.out.println("Nível de velocidade " + nivelVelocidade);
                 System.out.println("Velocidade: " + velocidade);
         }
 
@@ -311,14 +312,11 @@ public class Player {
 
                         nivelMultiDisparo++;
 
-                        System.out.println(
-                                        "Multi-disparo nível: "
-                                                        + nivelMultiDisparo);
+                        System.out.println("Multi-disparo nível: " + nivelMultiDisparo);
 
                 } else {
 
-                        System.out.println(
-                                        "Multi-disparo já está no máximo!");
+                        System.out.println("Multi-disparo já está no máximo!");
                 }
         }
 
